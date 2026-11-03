@@ -1,0 +1,12 @@
+node_modules/
+.next/
+out/
+.env
+.env.*
+!.env.example
+sources/*
+!sources/.gitkeep
+content/generated/
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
