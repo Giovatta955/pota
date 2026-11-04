@@ -41,3 +41,16 @@ export function parseMediaUrl(raw: string): ParsedMedia | null {
 }
 
 export const formatDuration = (s: number | null) => (s ? `${Math.max(1, Math.round(s / 60))} min` : "");
+
+// ---------- File caricati su Supabase Storage (bucket privato "media") ----------
+export const MEDIA_MAX_BYTES = 50 * 1024 * 1024;
+export const MEDIA_PATH_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*\/[0-9a-f-]{36}\.(mp3|m4a|wav|ogg|mp4|webm)$/;
+
+export function fileKindFromPath(path: string): "audio" | "video" | null {
+  const ext = /\.([a-z0-9]+)$/i.exec(path)?.[1]?.toLowerCase();
+  if (!ext) return null;
+  if (["mp3", "m4a", "wav", "ogg"].includes(ext)) return "audio";
+  if (["mp4", "webm"].includes(ext)) return "video";
+  return null;
+}
+export const extOf = (name: string) => /\.([a-z0-9]+)$/i.exec(name)?.[1]?.toLowerCase() ?? "";

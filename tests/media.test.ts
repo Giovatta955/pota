@@ -24,3 +24,19 @@ describe("parseMediaUrl", () => {
     expect(formatDuration(null)).toBe("");
   });
 });
+
+import { fileKindFromPath, MEDIA_PATH_RE } from "@/lib/media";
+describe("file caricati", () => {
+  it("riconosce audio e video dall'estensione", () => {
+    expect(fileKindFromPath("a/b.m4a")).toBe("audio");
+    expect(fileKindFromPath("a/b.WAV")).toBe("audio");
+    expect(fileKindFromPath("a/b.mp4")).toBe("video");
+    expect(fileKindFromPath("a/b.exe")).toBeNull();
+  });
+  it("accetta solo percorsi nel formato atteso (niente path traversal)", () => {
+    const id = "123e4567-e89b-12d3-a456-426614174000";
+    expect(MEDIA_PATH_RE.test(`demo-sub/${id}.mp3`)).toBe(true);
+    expect(MEDIA_PATH_RE.test(`../x/${id}.mp3`)).toBe(false);
+    expect(MEDIA_PATH_RE.test(`demo/${id}.html`)).toBe(false);
+  });
+});

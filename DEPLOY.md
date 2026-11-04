@@ -4,7 +4,7 @@ Tempo stimato: ~1 ora. Costi: Supabase e Vercel gratuiti per iniziare; dominio ~
 
 ## 1. Supabase
 1. Crea un progetto (regione UE). Annota **Project URL**, **publishable key** (ex anon), **secret key** (ex service role) (Settings → API).
-2. SQL editor → incolla ed esegui, in ordine, `supabase/migrations/0001_init.sql` e poi `supabase/migrations/0002_media.sql` (podcast e video).
+2. SQL editor → incolla ed esegui, in ordine, `supabase/migrations/0001_init.sql` poi `0002_media.sql` e `0003_media_storage.sql` (podcast e video, bucket privato).
 3. Authentication → URL Configuration: *Site URL* = `https://<dominio>`; *Redirect URLs* aggiungi `https://<dominio>/auth/callback` e `http://localhost:3000/auth/callback`.
 4. Authentication → Providers: Email (magic link) attivo; Google se vuoi (client ID/secret da Google Cloud Console; redirect = URL di callback indicato da Supabase).
 5. Authentication → Email templates: personalizza il "Magic Link" in italiano (fa da email di benvenuto).

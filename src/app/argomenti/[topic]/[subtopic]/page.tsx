@@ -10,7 +10,7 @@ import { Flashcards } from "@/components/flashcards";
 import { Quiz } from "@/components/quiz";
 import { shuffle } from "@/lib/trainer/stats";
 import { MediaPlayer } from "@/components/media-player";
-import { parseMediaUrl, formatDuration } from "@/lib/media";
+import { parseMediaUrl, formatDuration, fileKindFromPath, type ParsedMedia } from "@/lib/media";
 
 type Props = { params: Promise<{ topic: string; subtopic: string }>; searchParams: Promise<{ v?: string; l?: string }> };
 
@@ -70,8 +70,21 @@ async function Section({ v, level, subtopic, base, userId }: { v: string; level?
     return parsed.success ? <MapTree root={parsed.data} /> : <Empty />;
   }
   if (v === "media") {
-    const { data: items } = await supabase.from("media").select("id,kind,title,url,description,duration_s").eq("subtopic_id", subtopic).order("position").order("created_at");
-    const list = (items ?? []).map((m) => ({ m, parsed: parseMediaUrl(m.url as string) })).filter((x) => x.parsed);
+    const { data: items } = await supabase.from("media").select("id,kind,title,url,path,description,duration_s").eq("subtopic_id", subtopic).order("position").order("created_at");
+    const list = (
+      await Promise.all(
+        (items ?? []).map(async (m) => {
+          let parsed: ParsedMedia | null = null;
+          if (m.path) {
+            const kind = fileKindFromPath(m.path as string);
+            // link firmato a tempo: la RLS su Storage verifica l'accesso al sottoargomento
+            const { data: signed } = await supabase.storage.from("media").createSignedUrl(m.path as string, 7200);
+            if (kind && signed?.signedUrl) parsed = { provider: "file", fileKind: kind, src: signed.signedUrl };
+          } else if (m.url) parsed = parseMediaUrl(m.url as string);
+          return parsed ? { m, parsed } : null;
+        }),
+      )
+    ).filter((x): x is { m: NonNullable<typeof items>[number]; parsed: ParsedMedia } => !!x);
     if (!list.length) return <Empty />;
     return (
       <ul className="space-y-6">
@@ -79,7 +92,7 @@ async function Section({ v, level, subtopic, base, userId }: { v: string; level?
           <li key={m.id as string} className="space-y-2">
             <h2 className="font-semibold">{m.kind === "podcast" ? "🎧" : "🎬"} {m.title as string} <span className="text-sm font-normal text-slate-500">{formatDuration(m.duration_s as number | null)}</span></h2>
             {m.description ? <p className="text-sm text-slate-600">{m.description as string}</p> : null}
-            <MediaPlayer media={parsed!} title={m.title as string} />
+            <MediaPlayer media={parsed} title={m.title as string} />
           </li>
         ))}
       </ul>

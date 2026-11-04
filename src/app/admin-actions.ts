@@ -2,7 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getSession } from "@/lib/auth";
-import { parseMediaUrl } from "@/lib/media";
+import { parseMediaUrl, MEDIA_PATH_RE } from "@/lib/media";
 import { createClient } from "@/lib/supabase/server";
 
 async function adminClient() {
@@ -73,9 +73,29 @@ export async function addMedia(formData: FormData) {
   if (error) throw new Error(error.message);
   revalidatePath("/admin/media");
 }
+const fileSchema = z.object({
+  subtopic_id: z.string().min(1),
+  kind: z.enum(["podcast", "video"]),
+  title: z.string().trim().min(1).max(200),
+  path: z.string().regex(MEDIA_PATH_RE),
+  description: z.string().trim().max(1000).optional(),
+  duration_s: z.number().int().min(1).max(36000).optional(),
+});
+/** Registra un file già caricato (dal browser, direttamente su Storage: su Vercel il body delle funzioni è limitato a ~4,5 MB). */
+export async function addMediaFile(input: z.infer<typeof fileSchema>) {
+  const m = fileSchema.parse(input);
+  if (!m.path.startsWith(`${m.subtopic_id}/`)) throw new Error("percorso non coerente");
+  const db = await adminClient();
+  const { error } = await db.from("media").insert({ subtopic_id: m.subtopic_id, kind: m.kind, title: m.title, path: m.path, description: m.description || null, duration_s: m.duration_s ?? null });
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/media");
+}
+
 export async function deleteMedia(formData: FormData) {
   const id = z.string().uuid().parse(formData.get("id"));
   const db = await adminClient();
+  const { data: row } = await db.from("media").select("path").eq("id", id).maybeSingle();
+  if (row?.path) await db.storage.from("media").remove([row.path as string]);
   await db.from("media").delete().eq("id", id);
   revalidatePath("/admin/media");
 }
