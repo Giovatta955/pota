@@ -3,7 +3,7 @@
 Tempo stimato: ~1 ora. Costi: Supabase e Vercel gratuiti per iniziare; dominio ~10–15 €/anno; Stripe a commissione.
 
 ## 1. Supabase
-1. Crea un progetto (regione UE). Annota **Project URL**, **anon key**, **service role key** (Settings → API).
+1. Crea un progetto (regione UE). Annota **Project URL**, **publishable key** (ex anon), **secret key** (ex service role) (Settings → API).
 2. SQL editor → incolla ed esegui `supabase/migrations/0001_init.sql`.
 3. Authentication → URL Configuration: *Site URL* = `https://<dominio>`; *Redirect URLs* aggiungi `https://<dominio>/auth/callback` e `http://localhost:3000/auth/callback`.
 4. Authentication → Providers: Email (magic link) attivo; Google se vuoi (client ID/secret da Google Cloud Console; redirect = URL di callback indicato da Supabase).

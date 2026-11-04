@@ -11,9 +11,10 @@ const rows: Row[] = [];
 const check = (ok: boolean, level: Row["level"], msg: string) => rows.push({ ok, level, msg });
 const env = (k: string) => process.env[k] ?? "";
 
-for (const k of ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "NEXT_PUBLIC_SITE_URL"])
+for (const k of ["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "NEXT_PUBLIC_SITE_URL"])
   check(!!env(k), "BLOCCO", `variabile ${k} impostata`);
 
+check(!!(env("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY") || env("NEXT_PUBLIC_SUPABASE_ANON_KEY")), "BLOCCO", "chiave pubblica Supabase (NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) impostata");
 const site = env("NEXT_PUBLIC_SITE_URL");
 check(!live || site.startsWith("https://"), "BLOCCO", "NEXT_PUBLIC_SITE_URL è https:// (produzione)");
 check(!site.includes("localhost") || !live, "BLOCCO", "NEXT_PUBLIC_SITE_URL non punta a localhost");
@@ -21,7 +22,7 @@ check(!site.includes("localhost") || !live, "BLOCCO", "NEXT_PUBLIC_SITE_URL non 
 const sk = env("STRIPE_SECRET_KEY");
 check(live ? sk.startsWith("sk_live_") : sk.startsWith("sk_test_") || !sk, "BLOCCO", live ? "chiave Stripe LIVE (sk_live_…)" : "chiave Stripe in modalità test");
 check(!env("STRIPE_WEBHOOK_SECRET") || env("STRIPE_WEBHOOK_SECRET").startsWith("whsec_"), "BLOCCO", "STRIPE_WEBHOOK_SECRET ha formato whsec_…");
-check(!env("SUPABASE_SERVICE_ROLE_KEY") || env("SUPABASE_SERVICE_ROLE_KEY") !== env("NEXT_PUBLIC_SUPABASE_ANON_KEY"), "BLOCCO", "service role diversa dalla chiave anon");
+check(!env("SUPABASE_SERVICE_ROLE_KEY") || env("SUPABASE_SERVICE_ROLE_KEY") !== (env("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY") || env("NEXT_PUBLIC_SUPABASE_ANON_KEY")), "BLOCCO", "service role diversa dalla chiave anon");
 
 const end = new Date(config.prices.passValidUntil);
 check(!Number.isNaN(end.getTime()) && end > new Date(), "avviso", "config.prices.passValidUntil è una data futura (altrimenti il pass vale 12 mesi)");
