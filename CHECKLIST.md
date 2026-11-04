@@ -43,7 +43,7 @@ Legenda: `[x]` fatto (con data) · `[ ]` da fare · `TODO_GIOVANNI` = serve un t
 - [x] Gestione argomenti/sottoargomenti da `/admin/argomenti` (2026-11-04)
 - [x] Sezione "Podcast e video" per sottoargomento + gestione da `/admin/media` — richiede `0002_media.sql` (2026-11-04)
 - [x] Upload file (NotebookLM) in bucket privato con link firmati e paywall via RLS — `0003_media_storage.sql` (2026-11-04)
-- [ ] Eseguire `0002_media.sql` e poi `0003_media_storage.sql` su Supabase (Giovanni)
+- [x] Eseguite `0002_media.sql` e `0003_media_storage.sql` su Supabase, RLS verificata (2026-11-04)
 - [ ] Verificare termini d'uso NotebookLM (uso commerciale) e che l'input siano i riassunti originali, non fonti protette (Giovanni)
 
 ## Fase 7 — Deploy
