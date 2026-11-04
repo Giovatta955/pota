@@ -33,6 +33,7 @@ export function MediaUploader({ subtopics }: { subtopics: Sub[] }) {
     const ext = extOf(file.name);
     if (!["mp3", "m4a", "wav", "ogg", "mp4", "webm"].includes(ext)) { setState("err"); return setMsg("Formato non supportato: usa mp3, m4a, wav, ogg, mp4 o webm."); }
     if (file.size > MEDIA_MAX_BYTES) { setState("err"); return setMsg(`File troppo grande (${(file.size / 1048576).toFixed(0)} MB): il limite è 50 MB. Comprimilo o, con il piano Pro di Supabase, alza il limite.`); }
+    if (ext === "wav" && !window.confirm("I file WAV sono molto pesanti (anche 10 volte un MP3/M4A) e consumano lo spazio gratuito. Caricare comunque?")) return;
     setState("busy"); setMsg("Caricamento in corso…");
     const path = `${subtopic}/${crypto.randomUUID()}.${ext}`;
     const { error } = await createClient().storage.from("media").upload(path, file, { contentType: file.type || undefined });
@@ -62,7 +63,7 @@ export function MediaUploader({ subtopics }: { subtopics: Sub[] }) {
       <textarea name="description" rows={2} placeholder="Descrizione (opzionale)" className={input} />
       <button disabled={state === "busy"} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">Carica</button>
       {msg && <p role={state === "err" ? "alert" : "status"} className={`text-sm ${state === "err" ? "text-red-700" : "text-slate-600"}`}>{msg}</p>}
-      <p className="text-xs text-slate-500">Il file resta privato: gli utenti lo ascoltano solo se hanno accesso al sottoargomento (gratis o abbonamento). Limite 50 MB per file.</p>
+      <p className="text-xs text-slate-500">Il file resta privato: gli utenti lo ascoltano solo se hanno accesso al sottoargomento (gratis o abbonamento). Limite 50 MB per file. Preferisci M4A/MP3: un podcast di 20 minuti pesa 10–20 MB, in WAV oltre 200 MB.</p>
     </form>
   );
 }

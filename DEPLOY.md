@@ -4,11 +4,11 @@ Tempo stimato: ~1 ora. Costi: Supabase e Vercel gratuiti per iniziare; dominio ~
 
 ## 1. Supabase
 1. Crea un progetto (regione UE). Annota **Project URL**, **publishable key** (ex anon), **secret key** (ex service role) (Settings → API).
-2. SQL editor → incolla ed esegui, in ordine, `supabase/migrations/0001_init.sql` poi `0002_media.sql` e `0003_media_storage.sql` (podcast e video, bucket privato).
+2. SQL editor → incolla ed esegui, in ordine, `supabase/migrations/0001_init.sql` poi `0002_media.sql`, `0003_media_storage.sql` (podcast e video, bucket privato) e `0004_free_tier.sql` (pulizia automatica e misura dello spazio).
 3. Authentication → URL Configuration: *Site URL* = `https://<dominio>`; *Redirect URLs* aggiungi `https://<dominio>/auth/callback` e `http://localhost:3000/auth/callback`.
 4. Authentication → Providers: Email (magic link) attivo; Google se vuoi (client ID/secret da Google Cloud Console; redirect = URL di callback indicato da Supabase).
 5. Authentication → Email templates: personalizza il "Magic Link" in italiano (fa da email di benvenuto).
-6. (Consigliato) Authentication → SMTP: per volumi reali configura un SMTP tuo (il predefinito Supabase ha limiti bassi).
+6. **Obbligatorio prima del lancio** — Authentication → SMTP: il mittente predefinito di Supabase è pensato solo per le prove (pochissime email l'ora). Usa un SMTP gratuito, es. Resend (piano free con alcune migliaia di email al mese): crea l'account, verifica il dominio, copia le credenziali SMTP in Supabase.
 
 ## 2. Contenuti
 ```bash
@@ -47,6 +47,14 @@ npm run import -- <argomento>
 2. Stripe in **live**: chiave `sk_live_…` → `npm run stripe:setup` con quella chiave; nuovo webhook live + nuovo `STRIPE_WEBHOOK_SECRET`; aggiorna le env su Vercel e ridistribuisci.
 3. `npm run preflight -- --live` deve dire "Nessun blocco".
 4. Un acquisto reale di prova (poi rimborsalo).
+
+## Restare nel piano gratuito
+- `/admin/spazio` mostra database e file rispetto ai limiti free (500 MB / 1 GB); diventa rosso oltre l'80%.
+- Lo storico risposte si pulisce da solo ogni domenica (ultimi 12 mesi, max 3000 per utente).
+- Podcast in M4A/MP3, non WAV. Il traffico (5 GB/mese) si controlla in Supabase → Usage.
+- Pausa: il progetto free si sospende dopo ~1 settimana senza visite; con utenti attivi non succede, e in ogni caso si riattiva dal pannello senza perdere dati.
+- Backup: `.github/workflows/backup.yml` ogni lunedì, cifrato. Crea in GitHub → Settings → Secrets → Actions: `SUPABASE_DB_URL` (Connetti → Session pooler, con la password) e `BACKUP_PASSPHRASE` (frase lunga da conservare). Si scarica da Actions → Backup database → Artifacts (90 giorni). Per ripristinare: `gpg -d file.gpg | gunzip | psql "<connection string>"`.
+- Quando passare a Pro (~25 $/mese): spazio oltre l'80%, oppure appena gli abbonati coprono la spesa (bastano 3).
 
 ## Manutenzione (quasi zero)
 - Errori segnalati: `/admin` ogni tanto. Dipendenze: Dependabot/`npm audit` mensile. Backup: Supabase (piano Pro per backup giornalieri, valuta dopo i primi ricavi).

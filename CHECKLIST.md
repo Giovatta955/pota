@@ -46,6 +46,11 @@ Legenda: `[x]` fatto (con data) · `[ ]` da fare · `TODO_GIOVANNI` = serve un t
 - [x] Eseguite `0002_media.sql` e `0003_media_storage.sql` su Supabase, RLS verificata (2026-11-04)
 - [ ] Verificare termini d'uso NotebookLM (uso commerciale) e che l'input siano i riassunti originali, non fonti protette (Giovanni)
 
+- [x] Piano gratuito: pulizia storico, pannello `/admin/spazio`, backup settimanale cifrato, avviso WAV — `0004_free_tier.sql` (2026-11-04)
+- [ ] Eseguire `0004_free_tier.sql` su Supabase (Giovanni)
+- [ ] Segreti GitHub per il backup: `SUPABASE_DB_URL`, `BACKUP_PASSPHRASE` (Giovanni)
+- [ ] SMTP gratuito (es. Resend) in Supabase prima del lancio (Giovanni)
+
 ## Fase 7 — Deploy
 - [x] Preparazione deploy: `DEPLOY.md`, `npm run preflight`, header di sicurezza, CI GitHub (2026-11-04)
 - [ ] Deploy su Vercel + env + dominio (richiede i tuoi account)
