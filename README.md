@@ -36,5 +36,6 @@ Per cambiare provider: implementa `PaymentProvider` (`src/lib/payments/types.ts`
 - Dati del titolare e segnaposto: `src/lib/site.ts` (cerca `TODO_GIOVANNI` in tutto il repo prima del lancio: `grep -rn TODO_GIOVANNI src`).
 - Pagine legali (`/privacy`, `/cookie`, `/termini`, `/recesso`, `/disclaimer`) sono **bozze da far validare**. Solo cookie tecnici → nessun banner.
 - Diventare admin: in Supabase SQL editor `update profiles set is_admin = true where email = 'tua@email';` poi vai su `/admin`.
+- Area admin (`/admin`): segnalazioni, **Argomenti** (crea/modifica argomenti e sottoargomenti, ordine, peso nell'esame, gratis/premium) e **Podcast e video** (link YouTube/Vimeo/Spotify o file .mp3/.mp4 su Supabase Storage). Solo gli utenti con `is_admin = true` possono scrivere: tutti gli altri sono bloccati dalla RLS.
 - Account → "Scarica i miei dati" (JSON) e "Elimina account" (blocca se c'è un abbonamento mensile attivo).
 - Email di benvenuto: l'email del magic link (Supabase → Auth → Email templates) fa da benvenuto, gratis. Un'email dedicata richiede un servizio (es. Resend, piano gratuito) — da decidere.

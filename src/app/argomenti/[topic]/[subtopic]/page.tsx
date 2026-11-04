@@ -9,6 +9,8 @@ import { MapTree } from "@/components/map-tree";
 import { Flashcards } from "@/components/flashcards";
 import { Quiz } from "@/components/quiz";
 import { shuffle } from "@/lib/trainer/stats";
+import { MediaPlayer } from "@/components/media-player";
+import { parseMediaUrl, formatDuration } from "@/lib/media";
 
 type Props = { params: Promise<{ topic: string; subtopic: string }>; searchParams: Promise<{ v?: string; l?: string }> };
 
@@ -17,6 +19,7 @@ const TABS = [
   { id: "mappa", label: "Mappa" },
   { id: "flashcard", label: "Flashcard" },
   { id: "quiz", label: "Quiz" },
+  { id: "media", label: "Podcast e video" },
 ] as const;
 
 export default async function SubtopicPage({ params, searchParams }: Props) {
@@ -65,6 +68,22 @@ async function Section({ v, level, subtopic, base, userId }: { v: string; level?
     const { data } = await supabase.from("maps").select("tree").eq("subtopic_id", subtopic).maybeSingle();
     const parsed = mapNodeSchema.safeParse(data?.tree);
     return parsed.success ? <MapTree root={parsed.data} /> : <Empty />;
+  }
+  if (v === "media") {
+    const { data: items } = await supabase.from("media").select("id,kind,title,url,description,duration_s").eq("subtopic_id", subtopic).order("position").order("created_at");
+    const list = (items ?? []).map((m) => ({ m, parsed: parseMediaUrl(m.url as string) })).filter((x) => x.parsed);
+    if (!list.length) return <Empty />;
+    return (
+      <ul className="space-y-6">
+        {list.map(({ m, parsed }) => (
+          <li key={m.id as string} className="space-y-2">
+            <h2 className="font-semibold">{m.kind === "podcast" ? "🎧" : "🎬"} {m.title as string} <span className="text-sm font-normal text-slate-500">{formatDuration(m.duration_s as number | null)}</span></h2>
+            {m.description ? <p className="text-sm text-slate-600">{m.description as string}</p> : null}
+            <MediaPlayer media={parsed!} title={m.title as string} />
+          </li>
+        ))}
+      </ul>
+    );
   }
   if (v === "flashcard") {
     const { data: cards } = await supabase.from("flashcards").select("id,front,back").eq("subtopic_id", subtopic);

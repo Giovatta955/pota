@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import { requireSession } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { saveQuestion, setReportStatus } from "@/app/admin-actions";
@@ -6,8 +5,7 @@ import { saveQuestion, setReportStatus } from "@/app/admin-actions";
 export const metadata = { title: "Admin", robots: { index: false } };
 
 export default async function Admin() {
-  const s = await requireSession();
-  if (!s.viewer.isAdmin) notFound();
+  await requireSession(); // il controllo admin è in admin/layout.tsx
   const db = await createClient();
   const { data: reports } = await db.from("reports").select("id,note,created_at,question_id").eq("status", "open").order("created_at");
   const ids = [...new Set((reports ?? []).map((r) => r.question_id as string))];

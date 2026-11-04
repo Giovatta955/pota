@@ -39,6 +39,11 @@ Legenda: `[x]` fatto (con data) · `[ ]` da fare · `TODO_GIOVANNI` = serve un t
 - [x] Export/eliminazione dati (GDPR) e admin minimo (2026-11-04)
 - [ ] Email di benvenuto: da decidere (vedi nota in README, richiede servizio email)
 
+## Extra richiesti
+- [x] Gestione argomenti/sottoargomenti da `/admin/argomenti` (2026-11-04)
+- [x] Sezione "Podcast e video" per sottoargomento + gestione da `/admin/media` — richiede `0002_media.sql` (2026-11-04)
+- [ ] Eseguire `0002_media.sql` su Supabase (Giovanni)
+
 ## Fase 7 — Deploy
 - [x] Preparazione deploy: `DEPLOY.md`, `npm run preflight`, header di sicurezza, CI GitHub (2026-11-04)
 - [ ] Deploy su Vercel + env + dominio (richiede i tuoi account)
