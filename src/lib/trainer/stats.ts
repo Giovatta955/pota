@@ -122,3 +122,9 @@ export function composeTrainerSession(args: {
 
   return shuffle(chosen, rng);
 }
+
+/** Aggiorna le statistiche di un argomento dopo una risposta. `recentAtLevel` = esiti già registrati al livello corrente (vecchio→nuovo), questa risposta inclusa. */
+export function applyAnswer(stat: TopicStat, correct: boolean, recentAtLevel: boolean[]): TopicStat {
+  const level = nextLevel(stat.currentLevel, recentAtLevel);
+  return { ...stat, accuracyEma: updateEma(stat.accuracyEma, correct), nAnswers: stat.nAnswers + 1, currentLevel: level };
+}

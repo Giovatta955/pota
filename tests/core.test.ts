@@ -172,3 +172,13 @@ describe("paywall", () => {
     expect(canUsePaidFeatures({ isAdmin: false, subs: [{ status: "active", currentPeriodEnd: future }] }, now)).toBe(true);
   });
 });
+
+import { applyAnswer } from "@/lib/trainer/stats";
+describe("applyAnswer", () => {
+  it("aggiorna ema, contatore e livello", () => {
+    const s = applyAnswer({ topicId: "a", accuracyEma: 0.5, currentLevel: 2, nAnswers: 9 }, true, Array(10).fill(true));
+    expect(s.nAnswers).toBe(10);
+    expect(s.accuracyEma).toBeCloseTo(0.6);
+    expect(s.currentLevel).toBe(3);
+  });
+});
