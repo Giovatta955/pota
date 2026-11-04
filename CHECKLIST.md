@@ -53,11 +53,12 @@ Legenda: `[x]` fatto (con data) · `[ ]` da fare · `TODO_GIOVANNI` = serve un t
 
 ## Fase 7 — Deploy
 - [x] Preparazione deploy: `DEPLOY.md`, `npm run preflight`, header di sicurezza, CI GitHub (2026-11-04)
-- [ ] Deploy su Vercel + env + dominio (richiede i tuoi account)
+- [x] Scelto Netlify free (uso commerciale ammesso; Vercel Hobby no) + `netlify.toml` con pubblicazione solo su commit `[deploy]` (2026-11-04)
+- [ ] Deploy su Netlify + env + dominio (richiede i tuoi account)
 
 ---
 ## Da fare da Giovanni (non modificato da Claude)
-- [ ] Account: GitHub, Supabase, Vercel, Stripe, Anthropic (API), dominio
+- [ ] Account: GitHub, Supabase, Netlify, Stripe, Anthropic (API), dominio
 - [ ] Chiavi in `.env.local` (vedi `.env.example`)
 - [ ] Materiali sorgente in `/sources/<argomento>/`
 - [ ] Parere commercialista (P.IVA, regime, Stripe vs Lemon Squeezy)

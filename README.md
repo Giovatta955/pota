@@ -1,6 +1,6 @@
 # Piattaforma TFA Sostegno
 
-Next.js + Supabase + Stripe. Zero AI a runtime: contenuti generati offline.
+Next.js + Supabase + Stripe, ospitato su Netlify. Zero AI a runtime: contenuti generati offline.
 
 ## Setup locale
 ```bash
@@ -28,7 +28,7 @@ Modello via `CLAUDE_MODEL` (default `claude-sonnet-5-5`). Output in `content/gen
 3. Il pass dura fino a `config.prices.passValidUntil` (data del concorso, `YYYY-MM-DD`); finché è segnaposto vale 12 mesi dall'acquisto. Un rimborso totale del pass revoca l'accesso.
 4. Fatture: Stripe emette ricevute/fatture ma **non** la fattura elettronica SdI: TODO_GIOVANNI, chiedere al commercialista. Anche l'IVA (Stripe Tax o gestione manuale) va decisa con lui.
 5. **Managed Payments** (Stripe come venditore) è attivo sul tuo account: ogni prodotto ha un tax code (`config.stripe.productTaxCode`, impostato da `stripe:setup`). TODO_GIOVANNI: decidere col commercialista chi risulta venditore (impatta fatture, IVA, commissioni e i testi legali: oggi dicono "titolare").
-6. In questo ambiente cloud gli script Stripe richiedono `NODE_USE_ENV_PROXY=1` (proxy di rete); in locale/Vercel non serve.
+6. In questo ambiente cloud gli script Stripe richiedono `NODE_USE_ENV_PROXY=1` (proxy di rete); in locale/Netlify non serve.
 7. Stripe Identity non è usato: per un servizio di quiz non serve e aggiungerebbe costi per verifica e oneri privacy.
 Per cambiare provider: implementa `PaymentProvider` (`src/lib/payments/types.ts`) e seleziona con `PAYMENT_PROVIDER`.
 

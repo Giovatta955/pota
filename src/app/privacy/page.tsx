@@ -21,7 +21,7 @@ export default function Privacy() {
         <li>Sicurezza e prevenzione abusi (legittimo interesse).</li>
       </ul>
       <h2>Fornitori (responsabili del trattamento)</h2>
-      <p>Supabase (database e autenticazione), Vercel (hosting), Stripe (pagamenti). TODO_GIOVANNI: verificare sedi dei server e trasferimenti extra-UE con relative garanzie.</p>
+      <p>Supabase (database e autenticazione), Netlify (hosting), Stripe (pagamenti). TODO_GIOVANNI: verificare sedi dei server e trasferimenti extra-UE con relative garanzie.</p>
       <h2>Conservazione</h2>
       <p>Finché l&apos;account è attivo; alla cancellazione i dati personali vengono eliminati, salvo quelli da conservare per legge (fiscali). TODO_GIOVANNI: indicare i termini.</p>
       <h2>I tuoi diritti</h2>

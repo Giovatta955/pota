@@ -1,6 +1,6 @@
-# Deploy (Vercel + Supabase + Stripe)
+# Deploy (Netlify + Supabase + Stripe)
 
-Tempo stimato: ~1 ora. Costi: Supabase e Vercel gratuiti per iniziare; dominio ~10–15 €/anno; Stripe a commissione.
+Tempo stimato: ~1 ora. Costi: Supabase e Netlify gratuiti per iniziare (Netlify free ammette l'uso commerciale; Vercel Hobby no); dominio ~10–15 €/anno; Stripe a commissione.
 
 ## 1. Supabase
 1. Crea un progetto (regione UE). Annota **Project URL**, **publishable key** (ex anon), **secret key** (ex service role) (Settings → API).
@@ -25,10 +25,12 @@ npm run import -- <argomento>
 2. Dopo il deploy: Developers → Webhooks → Add endpoint `https://<dominio>/api/webhooks/stripe`, eventi: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `charge.refunded`. Copia il *Signing secret* in `STRIPE_WEBHOOK_SECRET`.
 3. Branding (Settings → Branding) e dati attività; ricevute email attive.
 
-## 4. Vercel
-1. Importa il repo GitHub (framework Next.js rilevato da solo).
-2. Environment Variables (Production): tutte quelle di `.env.example` tranne `ANTHROPIC_API_KEY` e `CLAUDE_MODEL` (servono solo in locale). `NEXT_PUBLIC_SITE_URL=https://<dominio>`.
-3. Deploy. Poi Settings → Domains: aggiungi il dominio e imposta i DNS indicati.
+## 4. Netlify
+1. app.netlify.com → accedi con GitHub → **Add new project → Import an existing project → GitHub** → repo `pota`.
+2. **Branch to deploy**: il branch con il codice (oggi `claude/tfa-platform-setup-wexwn6`; dopo il merge, `master`). Nome progetto es. `tfa-sostegno` → URL `https://tfa-sostegno.netlify.app`. Le impostazioni di build arrivano da `netlify.toml`.
+3. **Environment variables**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_SITE_URL` (= URL Netlify o dominio). Non servono `ANTHROPIC_API_KEY` né `CLAUDE_MODEL`.
+4. **Crediti**: il sito si ripubblica solo se l'ultimo commit contiene `[deploy]` (vedi `netlify.toml`); dopo aver cambiato una variabile: Deploys → Trigger deploy. Controlla il consumo in Netlify → Usage; se finiscono il sito si ferma fino al mese dopo → passa a Personal (9 $/mese) quando hai abbonati.
+5. Dominio: Domain management → Add a domain, poi i DNS indicati.
 
 ## 5. Primo accesso e admin
 1. Accedi sul sito col tuo email, poi in Supabase SQL: `update profiles set is_admin = true where email = 'tua@email';` → `/admin`.
@@ -44,7 +46,7 @@ npm run import -- <argomento>
 
 ## 7. Go-live
 1. Compila tutti i `TODO_GIOVANNI` (`npm run preflight -- --live` te li elenca), valida i testi legali, conferma prezzi e `passValidUntil`.
-2. Stripe in **live**: chiave `sk_live_…` → `npm run stripe:setup` con quella chiave; nuovo webhook live + nuovo `STRIPE_WEBHOOK_SECRET`; aggiorna le env su Vercel e ridistribuisci.
+2. Stripe in **live**: chiave `sk_live_…` → `npm run stripe:setup` con quella chiave; nuovo webhook live + nuovo `STRIPE_WEBHOOK_SECRET`; aggiorna le env su Netlify e ripubblica (Trigger deploy).
 3. `npm run preflight -- --live` deve dire "Nessun blocco".
 4. Un acquisto reale di prova (poi rimborsalo).
 
