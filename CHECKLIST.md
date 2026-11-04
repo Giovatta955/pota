@@ -14,7 +14,8 @@ Legenda: `[x]` fatto (con data) · `[ ]` da fare · `TODO_GIOVANNI` = serve un t
 - [x] Seed di esempio — `content/seed/esempio.json` (2026-11-04)
 
 ## Fase 2 — Pipeline contenuti (pilota: 1 argomento)
-- [ ] ingest · generate · validate · review · import (idempotenti, --dry-run, stima costi)
+- [x] ingest · generate · validate · review · import (idempotenti, --dry-run, stima costi) (2026-11-04) — `generate` non provato dal vivo: manca ANTHROPIC_API_KEY
+- [ ] Collaudo pilota con un argomento reale (serve chiave + materiali)
 
 ## Fase 3 — Logica core (con test)
 - [ ] SM-2 · debolezza/livelli · composizione esame · controllo accessi paywall
