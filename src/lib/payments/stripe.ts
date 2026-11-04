@@ -40,6 +40,7 @@ export function fromSubscription(sub: SubLike): SubscriptionUpdate | null {
 
 type SessionLike = {
   id: string;
+  payment_intent?: string | { id: string } | null;
   mode: string;
   payment_status: string;
   customer: string | { id: string } | null;
@@ -57,9 +58,48 @@ export function fromPassSession(s: SessionLike, now: Date): SubscriptionUpdate |
     plan: "pass",
     status: "active",
     providerCustomerId: typeof s.customer === "string" ? s.customer : (s.customer?.id ?? null),
-    providerSubscriptionId: `pass_${s.id}`,
+    providerSubscriptionId: passKey(s.payment_intent ?? s.id),
     currentPeriodEnd: passEnd(now),
   };
+}
+
+const passKey = (pi: string | { id: string }) => `pass_${typeof pi === "string" ? pi : pi.id}`;
+
+type ChargeLike = {
+  payment_intent?: string | { id: string } | null;
+  refunded?: boolean;
+  customer?: string | { id: string } | null;
+  metadata?: Record<string, string> | null;
+};
+
+/** Rimborso totale di un pass → accesso revocato (i metadata del PaymentIntent sono copiati sulla charge). */
+export function fromRefundedCharge(c: ChargeLike, now: Date): SubscriptionUpdate | null {
+  if (!c.refunded || c.metadata?.plan !== "pass" || !c.metadata.user_id || !c.payment_intent) return null;
+  return {
+    userId: c.metadata.user_id,
+    provider: PROVIDER,
+    plan: "pass",
+    status: "refunded",
+    providerCustomerId: typeof c.customer === "string" ? c.customer : (c.customer?.id ?? null),
+    providerSubscriptionId: passKey(c.payment_intent),
+    currentPeriodEnd: now,
+  };
+}
+
+/** Chiavi di ricerca dei prezzi su Stripe (create da `npm run stripe:setup`): stesso codice in test e live, niente ID da copiare. */
+export const PRICE_LOOKUP: Record<Plan, string> = { monthly: "tfa_monthly", pass: "tfa_pass" };
+const priceCache = new Map<Plan, string>();
+
+async function resolvePrice(plan: Plan): Promise<string> {
+  const override = plan === "monthly" ? process.env.STRIPE_PRICE_MONTHLY : process.env.STRIPE_PRICE_PASS;
+  if (override) return override;
+  const hit = priceCache.get(plan);
+  if (hit) return hit;
+  const { data } = await client().prices.list({ lookup_keys: [PRICE_LOOKUP[plan]], active: true, limit: 1 });
+  const id = data[0]?.id;
+  if (!id) throw new Error(`Prezzo '${PRICE_LOOKUP[plan]}' non trovato su Stripe: lancia npm run stripe:setup`);
+  priceCache.set(plan, id);
+  return id;
 }
 
 function client() {
@@ -72,8 +112,7 @@ export const stripeProvider: PaymentProvider = {
   name: PROVIDER,
 
   async createCheckout({ userId, email, plan, customerId, successUrl, cancelUrl }) {
-    const price = plan === "monthly" ? process.env.STRIPE_PRICE_MONTHLY : process.env.STRIPE_PRICE_PASS;
-    if (!price) throw new Error(`Price ID mancante per il piano ${plan}`);
+    const price = await resolvePrice(plan);
     const metadata = { user_id: userId, plan };
     const session = await client().checkout.sessions.create({
       mode: plan === "monthly" ? "subscription" : "payment",
@@ -82,10 +121,16 @@ export const stripeProvider: PaymentProvider = {
       cancel_url: cancelUrl,
       client_reference_id: userId,
       metadata,
-      ...(plan === "monthly" ? { subscription_data: { metadata } } : {}),
+      locale: "it",
+      allow_promotion_codes: true,
+      billing_address_collection: "required",
+      tax_id_collection: { enabled: true }, // clienti con P.IVA/CF aziendale
+      ...(plan === "monthly"
+        ? { subscription_data: { metadata } }
+        : { payment_intent_data: { metadata }, invoice_creation: { enabled: true, invoice_data: { metadata } } }), // pass: fattura/ricevuta Stripe
       ...(customerId ? { customer: customerId } : email ? { customer_email: email } : {}),
-      ...(plan === "pass" ? { customer_creation: customerId ? undefined : "always" } : {}),
-    });
+      ...(plan === "pass" && !customerId ? { customer_creation: "always" as const } : {}),
+    }, { idempotencyKey: `checkout_${userId}_${plan}_${Math.floor(Date.now() / 60000)}` }); // doppio click = stessa sessione
     if (!session.url) throw new Error("Stripe non ha restituito l'URL di checkout");
     return session.url;
   },
@@ -103,6 +148,8 @@ export const stripeProvider: PaymentProvider = {
       case "checkout.session.completed":
       case "checkout.session.async_payment_succeeded":
         return fromPassSession(event.data.object as unknown as SessionLike, new Date());
+      case "charge.refunded":
+        return fromRefundedCharge(event.data.object as unknown as ChargeLike, new Date());
       case "customer.subscription.created":
       case "customer.subscription.updated":
       case "customer.subscription.deleted":

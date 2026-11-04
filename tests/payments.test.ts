@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { fromSubscription, fromPassSession, passEnd } from "@/lib/payments/stripe";
+import { fromSubscription, fromPassSession, fromRefundedCharge, passEnd } from "@/lib/payments/stripe";
 import { getPaymentProvider } from "@/lib/payments";
 
 const now = new Date("2026-11-04T12:00:00Z");
@@ -17,8 +17,8 @@ describe("payments / stripe", () => {
     expect(fromSubscription({ id: "s", status: "active", customer: "c", metadata: {} })).toBeNull();
   });
   it("pass pagato → accesso attivo con id idempotente", () => {
-    const u = fromPassSession({ id: "cs_1", mode: "payment", payment_status: "paid", customer: "cus_1", metadata: { user_id: "u1", plan: "pass" } }, now);
-    expect(u).toMatchObject({ plan: "pass", status: "active", providerSubscriptionId: "pass_cs_1" });
+    const u = fromPassSession({ id: "cs_1", payment_intent: "pi_1", mode: "payment", payment_status: "paid", customer: "cus_1", metadata: { user_id: "u1", plan: "pass" } }, now);
+    expect(u).toMatchObject({ plan: "pass", status: "active", providerSubscriptionId: "pass_pi_1" });
     expect(u!.currentPeriodEnd!.getTime()).toBeGreaterThan(now.getTime());
   });
   it("pass non pagato o sessione di abbonamento: ignorati", () => {
@@ -54,5 +54,17 @@ describe("webhook firmato", () => {
     expect(await stripeProvider.parseWebhook(payload, sig)).toMatchObject({ userId: "u9", providerSubscriptionId: "sub_9", status: "active" });
     await expect(stripeProvider.parseWebhook(payload, sig.replace(/v1=\w+/, "v1=deadbeef"))).rejects.toThrow();
     await expect(stripeProvider.parseWebhook(payload, null)).rejects.toThrow();
+  });
+});
+
+describe("rimborsi", () => {
+  it("rimborso totale di un pass revoca l'accesso con la stessa chiave del pagamento", () => {
+    const u = fromRefundedCharge({ payment_intent: "pi_1", refunded: true, customer: "cus_1", metadata: { user_id: "u1", plan: "pass" } }, now);
+    expect(u).toMatchObject({ providerSubscriptionId: "pass_pi_1", status: "refunded", userId: "u1" });
+    expect(u!.currentPeriodEnd!.getTime()).toBe(now.getTime());
+  });
+  it("rimborso parziale o non-pass: ignorato", () => {
+    expect(fromRefundedCharge({ payment_intent: "pi", refunded: false, metadata: { user_id: "u", plan: "pass" } }, now)).toBeNull();
+    expect(fromRefundedCharge({ payment_intent: "pi", refunded: true, metadata: { user_id: "u", plan: "monthly" } }, now)).toBeNull();
   });
 });

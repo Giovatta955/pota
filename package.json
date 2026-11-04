@@ -14,7 +14,8 @@
     "generate": "tsx --env-file-if-exists=.env.local scripts/generate.ts",
     "validate": "tsx --env-file-if-exists=.env.local scripts/validate.ts",
     "review": "tsx --env-file-if-exists=.env.local scripts/review.ts",
-    "import": "tsx --env-file-if-exists=.env.local scripts/import.ts"
+    "import": "tsx --env-file-if-exists=.env.local scripts/import.ts",
+    "stripe:setup": "tsx --env-file-if-exists=.env.local scripts/stripe-setup.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.4.0",

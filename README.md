@@ -23,11 +23,11 @@ Il resto (pipeline, deploy) verrà documentato nelle fasi successive.
 Modello via `CLAUDE_MODEL` (default `claude-sonnet-5-5`). Output in `content/generated/` (git-ignored).
 
 ## Pagamenti (Stripe)
-1. In Stripe crea due prezzi: **mensile ricorrente** e **pass una tantum**; metti gli ID in `STRIPE_PRICE_MONTHLY` / `STRIPE_PRICE_PASS`. Gli importi mostrati sul sito sono in `src/lib/config.ts` e devono coincidere con quelli di Stripe.
-2. Attiva il **Customer Portal** (Impostazioni → Billing → Customer portal).
-3. Webhook: endpoint `https://<dominio>/api/webhooks/stripe` con eventi `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `customer.subscription.created|updated|deleted`; copia il segreto in `STRIPE_WEBHOOK_SECRET`.
-4. In locale: `stripe listen --forward-to localhost:3000/api/webhooks/stripe`.
-5. Il pass dura fino a `config.prices.passValidUntil` (data del concorso, ISO `YYYY-MM-DD`); finché è segnaposto vale 12 mesi dall'acquisto.
+1. Metti `STRIPE_SECRET_KEY` (sk_test_… in test) in `.env.local`, poi `npm run stripe:setup`: crea i prezzi (mensile ricorrente + pass una tantum, importi da `src/lib/config.ts`, ritrovati via `lookup_key`) e il Customer Portal. Idempotente; ripeti con la chiave live al lancio.
+2. Webhook: endpoint `https://<dominio>/api/webhooks/stripe` con eventi `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `customer.subscription.created|updated|deleted`, `charge.refunded`; il segreto va in `STRIPE_WEBHOOK_SECRET`. In locale: `stripe listen --forward-to localhost:3000/api/webhooks/stripe`.
+3. Il pass dura fino a `config.prices.passValidUntil` (data del concorso, `YYYY-MM-DD`); finché è segnaposto vale 12 mesi dall'acquisto. Un rimborso totale del pass revoca l'accesso.
+4. Fatture: Stripe emette ricevute/fatture ma **non** la fattura elettronica SdI: TODO_GIOVANNI, chiedere al commercialista. Anche l'IVA (Stripe Tax o gestione manuale) va decisa con lui.
+5. Stripe Identity non è usato: per un servizio di quiz non serve e aggiungerebbe costi per verifica e oneri privacy.
 Per cambiare provider: implementa `PaymentProvider` (`src/lib/payments/types.ts`) e seleziona con `PAYMENT_PROVIDER`.
 
 ## Legale, admin, GDPR
