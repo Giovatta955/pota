@@ -40,7 +40,8 @@ Legenda: `[x]` fatto (con data) · `[ ]` da fare · `TODO_GIOVANNI` = serve un t
 - [ ] Email di benvenuto: da decidere (vedi nota in README, richiede servizio email)
 
 ## Fase 7 — Deploy
-- [ ] Vercel + env + dominio
+- [x] Preparazione deploy: `DEPLOY.md`, `npm run preflight`, header di sicurezza, CI GitHub (2026-11-04)
+- [ ] Deploy su Vercel + env + dominio (richiede i tuoi account)
 
 ---
 ## Da fare da Giovanni (non modificato da Claude)

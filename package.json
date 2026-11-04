@@ -15,7 +15,8 @@
     "validate": "tsx --env-file-if-exists=.env.local scripts/validate.ts",
     "review": "tsx --env-file-if-exists=.env.local scripts/review.ts",
     "import": "tsx --env-file-if-exists=.env.local scripts/import.ts",
-    "stripe:setup": "tsx --env-file-if-exists=.env.local scripts/stripe-setup.ts"
+    "stripe:setup": "tsx --env-file-if-exists=.env.local scripts/stripe-setup.ts",
+    "preflight": "tsx --env-file-if-exists=.env.local scripts/preflight.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.4.0",
@@ -41,5 +42,8 @@
     "tsx": "^4.23.15",
     "typescript": "^5.9.3",
     "vitest": "^5.1.0"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
