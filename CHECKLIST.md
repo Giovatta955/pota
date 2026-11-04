@@ -31,7 +31,7 @@ Legenda: `[x]` fatto (con data) · `[ ]` da fare · `TODO_GIOVANNI` = serve un t
 - [ ] Collaudo end-to-end con Supabase reale (serve progetto Supabase + chiavi)
 
 ## Fase 5 — Pagamenti
-- [ ] `lib/payments` (Stripe Checkout, Portal, webhook) + paywall server-side
+- [x] `lib/payments` (Stripe Checkout, Portal, webhook) + paywall server-side (2026-11-04) — non provato con Stripe reale
 
 ## Fase 6 — Pagine, SEO, compliance
 - [ ] Landing, pagine argomento, sitemap/OG

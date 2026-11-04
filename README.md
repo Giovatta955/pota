@@ -21,3 +21,11 @@ Il resto (pipeline, deploy) verrà documentato nelle fasi successive.
 6. `npm run import -- <argomento> [--dry-run]` → carica su Supabase solo le domande `published` (serve `SUPABASE_SERVICE_ROLE_KEY`).
 
 Modello via `CLAUDE_MODEL` (default `claude-sonnet-5-5`). Output in `content/generated/` (git-ignored).
+
+## Pagamenti (Stripe)
+1. In Stripe crea due prezzi: **mensile ricorrente** e **pass una tantum**; metti gli ID in `STRIPE_PRICE_MONTHLY` / `STRIPE_PRICE_PASS`. Gli importi mostrati sul sito sono in `src/lib/config.ts` e devono coincidere con quelli di Stripe.
+2. Attiva il **Customer Portal** (Impostazioni → Billing → Customer portal).
+3. Webhook: endpoint `https://<dominio>/api/webhooks/stripe` con eventi `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `customer.subscription.created|updated|deleted`; copia il segreto in `STRIPE_WEBHOOK_SECRET`.
+4. In locale: `stripe listen --forward-to localhost:3000/api/webhooks/stripe`.
+5. Il pass dura fino a `config.prices.passValidUntil` (data del concorso, ISO `YYYY-MM-DD`); finché è segnaposto vale 12 mesi dall'acquisto.
+Per cambiare provider: implementa `PaymentProvider` (`src/lib/payments/types.ts`) e seleziona con `PAYMENT_PROVIDER`.
