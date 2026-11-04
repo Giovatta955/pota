@@ -6,7 +6,7 @@ Legenda: `[x]` fatto (con data) · `[ ]` da fare · `TODO_GIOVANNI` = serve un t
 - [x] Struttura repo, Next.js 16 + TS strict + Tailwind 4 + ESLint + Vitest (2026-11-03)
 - [x] `.env.example`, `.gitignore`, `lib/config.ts` (prezzi configurabili) (2026-11-03)
 - [x] Test/lint/build verdi (2026-11-03)
-- [ ] README (setup locale, env, pipeline, deploy)
+- [x] README (setup locale, env, pipeline, pagamenti, deploy) (2026-11-04)
 
 ## Fase 1 — Database e contenuti
 - [x] Migrazioni Supabase (tabelle §3) + RLS — `supabase/migrations/0001_init.sql` (2026-11-04)
@@ -28,7 +28,7 @@ Legenda: `[x]` fatto (con data) · `[ ]` da fare · `TODO_GIOVANNI` = serve un t
 - [x] Esame simulato + report (2026-11-04)
 - [x] Dashboard (2026-11-04)
 
-- [ ] Collaudo end-to-end con Supabase reale (serve progetto Supabase + chiavi)
+- [ ] Collaudo end-to-end: Supabase creato e migrazione eseguita (2026-11-04, RLS verificata); mancano secret key, seed e login reale
 
 ## Fase 5 — Pagamenti
 - [x] `lib/payments` (Stripe Checkout, Portal, webhook) + paywall server-side (2026-11-04) — provato in test mode: prezzi, portale e checkout creati (2026-11-04); manca solo il test del webhook con evento reale
