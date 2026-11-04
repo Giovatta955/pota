@@ -21,12 +21,14 @@ Legenda: `[x]` fatto (con data) · `[ ]` da fare · `TODO_GIOVANNI` = serve un t
 - [x] SM-2 · debolezza/livelli · composizione esame · controllo accessi paywall — `src/lib/{srs,trainer,exam,access}` (2026-11-04)
 
 ## Fase 4 — App
-- [ ] Auth magic link (+Google)
-- [ ] Viewer riassunto / mappa / flashcard
-- [ ] Quiz per livello + "Segnala errore"
-- [ ] Allenatore + "Le tue fragilità"
-- [ ] Esame simulato + report
-- [ ] Dashboard
+- [x] Auth magic link (+Google) (2026-11-04)
+- [x] Viewer riassunto / mappa / flashcard (2026-11-04)
+- [x] Quiz per livello + "Segnala errore" (2026-11-04)
+- [x] Allenatore + "Le tue fragilità" (2026-11-04)
+- [x] Esame simulato + report (2026-11-04)
+- [x] Dashboard (2026-11-04)
+
+- [ ] Collaudo end-to-end con Supabase reale (serve progetto Supabase + chiavi)
 
 ## Fase 5 — Pagamenti
 - [ ] `lib/payments` (Stripe Checkout, Portal, webhook) + paywall server-side
