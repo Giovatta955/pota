@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { site } from "@/lib/site";
+import { SiteFooter } from "@/components/site-footer";
 
 export const metadata: Metadata = {
-  title: "Preparazione TFA Sostegno",
-  description: "Riassunti, mappe, flashcard e quiz per TFA e concorsi sostegno.",
+  metadataBase: new URL(site.url),
+  title: { default: `${site.name} — quiz, flashcard e simulazioni`, template: `%s · ${site.name}` },
+  description: site.description,
+  openGraph: { type: "website", locale: "it_IT", siteName: site.name, title: site.name, description: site.description },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -11,9 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="it">
       <body className="min-h-screen bg-white text-slate-900 antialiased">
         {children}
-        <footer className="mx-auto max-w-3xl px-4 py-8 text-xs text-slate-500">
-          Sito non affiliato a MUR, INDIRE o università. P.IVA: TODO_GIOVANNI
-        </footer>
+        <SiteFooter />
       </body>
     </html>
   );

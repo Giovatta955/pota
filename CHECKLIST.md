@@ -34,9 +34,10 @@ Legenda: `[x]` fatto (con data) · `[ ]` da fare · `TODO_GIOVANNI` = serve un t
 - [x] `lib/payments` (Stripe Checkout, Portal, webhook) + paywall server-side (2026-11-04) — non provato con Stripe reale
 
 ## Fase 6 — Pagine, SEO, compliance
-- [ ] Landing, pagine argomento, sitemap/OG
-- [ ] Privacy, cookie, termini, recesso, disclaimer
-- [ ] Export/eliminazione dati (GDPR), admin minimo, email benvenuto
+- [x] Landing, pagine argomento, sitemap/OG (2026-11-04)
+- [x] Privacy, cookie, termini, recesso, disclaimer — bozze con TODO_GIOVANNI (2026-11-04)
+- [x] Export/eliminazione dati (GDPR) e admin minimo (2026-11-04)
+- [ ] Email di benvenuto: da decidere (vedi nota in README, richiede servizio email)
 
 ## Fase 7 — Deploy
 - [ ] Vercel + env + dominio

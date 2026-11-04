@@ -29,3 +29,10 @@ Modello via `CLAUDE_MODEL` (default `claude-sonnet-5-5`). Output in `content/gen
 4. In locale: `stripe listen --forward-to localhost:3000/api/webhooks/stripe`.
 5. Il pass dura fino a `config.prices.passValidUntil` (data del concorso, ISO `YYYY-MM-DD`); finché è segnaposto vale 12 mesi dall'acquisto.
 Per cambiare provider: implementa `PaymentProvider` (`src/lib/payments/types.ts`) e seleziona con `PAYMENT_PROVIDER`.
+
+## Legale, admin, GDPR
+- Dati del titolare e segnaposto: `src/lib/site.ts` (cerca `TODO_GIOVANNI` in tutto il repo prima del lancio: `grep -rn TODO_GIOVANNI src`).
+- Pagine legali (`/privacy`, `/cookie`, `/termini`, `/recesso`, `/disclaimer`) sono **bozze da far validare**. Solo cookie tecnici → nessun banner.
+- Diventare admin: in Supabase SQL editor `update profiles set is_admin = true where email = 'tua@email';` poi vai su `/admin`.
+- Account → "Scarica i miei dati" (JSON) e "Elimina account" (blocca se c'è un abbonamento mensile attivo).
+- Email di benvenuto: l'email del magic link (Supabase → Auth → Email templates) fa da benvenuto, gratis. Un'email dedicata richiede un servizio (es. Resend, piano gratuito) — da decidere.
