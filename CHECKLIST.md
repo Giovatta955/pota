@@ -18,7 +18,7 @@ Legenda: `[x]` fatto (con data) · `[ ]` da fare · `TODO_GIOVANNI` = serve un t
 - [ ] Collaudo pilota con un argomento reale (serve chiave + materiali)
 
 ## Fase 3 — Logica core (con test)
-- [ ] SM-2 · debolezza/livelli · composizione esame · controllo accessi paywall
+- [x] SM-2 · debolezza/livelli · composizione esame · controllo accessi paywall — `src/lib/{srs,trainer,exam,access}` (2026-11-04)
 
 ## Fase 4 — App
 - [ ] Auth magic link (+Google)
