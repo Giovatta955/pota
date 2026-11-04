@@ -1,0 +1,34 @@
+{
+  "topic_id": "demo-didattica",
+  "subtopic_id": "demo-didattica-inclusione",
+  "summary": {
+    "subtopic_id": "demo-didattica-inclusione",
+    "markdown": "## Inclusione scolastica (contenuto di esempio)\n\nTesto fittizio per sviluppo locale: l'inclusione consiste nel progettare la didattica in modo che tutti gli alunni possano partecipare, valorizzando le differenze individuali.",
+    "key_points": ["L'inclusione riguarda tutta la classe", "La progettazione parte dai bisogni reali", "Serve collaborazione tra docenti"]
+  },
+  "map": {
+    "title": "Inclusione",
+    "children": [
+      { "title": "Principi", "children": [{ "title": "Partecipazione" }, { "title": "Personalizzazione", "note": "Esempio" }] },
+      { "title": "Strumenti", "children": [{ "title": "Progetto individuale" }] }
+    ]
+  },
+  "flashcards": [
+    { "id": "demo-fc-1", "subtopic_id": "demo-didattica-inclusione", "front": "Che cos'è l'inclusione?", "back": "Progettare la didattica perché tutti possano partecipare." }
+  ],
+  "questions": [
+    {
+      "id": "demo-q-1", "topic_id": "demo-didattica", "subtopic_id": "demo-didattica-inclusione", "level": 1,
+      "stem": "Quale affermazione descrive meglio l'inclusione scolastica?",
+      "options": [
+        { "key": "A", "text": "Separare gli alunni con bisogni speciali in gruppi dedicati" },
+        { "key": "B", "text": "Progettare la didattica perché tutti gli alunni possano partecipare" },
+        { "key": "C", "text": "Ridurre gli obiettivi per tutta la classe" },
+        { "key": "D", "text": "Affidare l'alunno esclusivamente a un solo docente" }
+      ],
+      "correct": "B",
+      "explanation": "L'inclusione riguarda l'intera classe e la progettazione comune; le altre opzioni descrivono separazione o delega.",
+      "reference": null, "source_kind": "original", "status": "published"
+    }
+  ]
+}

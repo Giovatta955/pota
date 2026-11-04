@@ -9,9 +9,9 @@ Legenda: `[x]` fatto (con data) · `[ ]` da fare · `TODO_GIOVANNI` = serve un t
 - [ ] README (setup locale, env, pipeline, deploy)
 
 ## Fase 1 — Database e contenuti
-- [ ] Migrazioni Supabase (tabelle §3) + RLS
-- [ ] Schema zod domanda/mappa/flashcard + test
-- [ ] Seed di esempio
+- [x] Migrazioni Supabase (tabelle §3) + RLS — `supabase/migrations/0001_init.sql` (2026-11-04)
+- [x] Schema zod domanda/mappa/flashcard + test (2026-11-04)
+- [x] Seed di esempio — `content/seed/esempio.json` (2026-11-04)
 
 ## Fase 2 — Pipeline contenuti (pilota: 1 argomento)
 - [ ] ingest · generate · validate · review · import (idempotenti, --dry-run, stima costi)
