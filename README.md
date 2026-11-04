@@ -27,7 +27,9 @@ Modello via `CLAUDE_MODEL` (default `claude-sonnet-5-5`). Output in `content/gen
 2. Webhook: endpoint `https://<dominio>/api/webhooks/stripe` con eventi `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `customer.subscription.created|updated|deleted`, `charge.refunded`; il segreto va in `STRIPE_WEBHOOK_SECRET`. In locale: `stripe listen --forward-to localhost:3000/api/webhooks/stripe`.
 3. Il pass dura fino a `config.prices.passValidUntil` (data del concorso, `YYYY-MM-DD`); finché è segnaposto vale 12 mesi dall'acquisto. Un rimborso totale del pass revoca l'accesso.
 4. Fatture: Stripe emette ricevute/fatture ma **non** la fattura elettronica SdI: TODO_GIOVANNI, chiedere al commercialista. Anche l'IVA (Stripe Tax o gestione manuale) va decisa con lui.
-5. Stripe Identity non è usato: per un servizio di quiz non serve e aggiungerebbe costi per verifica e oneri privacy.
+5. **Managed Payments** (Stripe come venditore) è attivo sul tuo account: ogni prodotto ha un tax code (`config.stripe.productTaxCode`, impostato da `stripe:setup`). TODO_GIOVANNI: decidere col commercialista chi risulta venditore (impatta fatture, IVA, commissioni e i testi legali: oggi dicono "titolare").
+6. In questo ambiente cloud gli script Stripe richiedono `NODE_USE_ENV_PROXY=1` (proxy di rete); in locale/Vercel non serve.
+7. Stripe Identity non è usato: per un servizio di quiz non serve e aggiungerebbe costi per verifica e oneri privacy.
 Per cambiare provider: implementa `PaymentProvider` (`src/lib/payments/types.ts`) e seleziona con `PAYMENT_PROVIDER`.
 
 ## Legale, admin, GDPR

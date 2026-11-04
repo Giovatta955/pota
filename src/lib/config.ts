@@ -5,6 +5,10 @@ export const config = {
     passEur: 39, // TODO_GIOVANNI: conferma prezzo
     passValidUntil: "TODO_GIOVANNI", // data del concorso
   },
+  stripe: {
+    // Managed Payments (Stripe come venditore) richiede un tax code di prodotto. TODO_GIOVANNI: confermare il codice più adatto con il commercialista.
+    productTaxCode: "txcd_10000000", // servizi forniti elettronicamente (generico)
+  },
   exam: {
     minQuestions: 30,
     maxQuestions: 50,

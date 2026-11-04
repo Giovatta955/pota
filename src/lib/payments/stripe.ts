@@ -105,7 +105,7 @@ async function resolvePrice(plan: Plan): Promise<string> {
 function client() {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) throw new Error("STRIPE_SECRET_KEY mancante");
-  return new Stripe(key);
+  return new Stripe(key, { httpClient: Stripe.createFetchHttpClient() });
 }
 
 export const stripeProvider: PaymentProvider = {

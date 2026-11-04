@@ -7,13 +7,17 @@ import { die, log } from "./lib/common";
 
 const key = process.env.STRIPE_SECRET_KEY;
 if (!key) die("STRIPE_SECRET_KEY mancante (.env.local)");
-const stripe = new Stripe(key);
+const stripe = new Stripe(key, { httpClient: Stripe.createFetchHttpClient() }); // fetch: rispetta HTTPS_PROXY con NODE_USE_ENV_PROXY=1
 const cents = (eur: number) => Math.round(eur * 100);
 
 async function ensurePrice(lookup: string, name: string, eur: number, recurring: boolean) {
   const { data } = await stripe.prices.list({ lookup_keys: [lookup], active: true, limit: 1 });
   const existing = data[0];
-  if (existing && existing.unit_amount === cents(eur)) return log(`✔ ${lookup}: già presente (${existing.id}, ${eur} €)`);
+  if (existing && existing.unit_amount === cents(eur)) {
+    const productId = typeof existing.product === "string" ? existing.product : existing.product.id;
+    await stripe.products.update(productId, { tax_code: config.stripe.productTaxCode }); // idempotente
+    return log(`✔ ${lookup}: già presente (${existing.id}, ${eur} €), tax code ${config.stripe.productTaxCode}`);
+  }
   const created = await stripe.prices.create({
     currency: "eur",
     unit_amount: cents(eur),
@@ -21,7 +25,7 @@ async function ensurePrice(lookup: string, name: string, eur: number, recurring:
     lookup_key: lookup,
     transfer_lookup_key: true, // se il prezzo cambia, il lookup_key passa al nuovo e il vecchio resta per chi è già abbonato
     ...(recurring ? { recurring: { interval: "month" as const } } : {}),
-    product_data: { name },
+    product_data: { name, tax_code: config.stripe.productTaxCode },
   });
   log(`✔ ${lookup}: creato ${created.id} (${eur} €)${existing ? " — sostituisce il precedente" : ""}`);
 }
