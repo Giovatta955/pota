@@ -56,7 +56,7 @@ Legenda: `[x]` fatto (con data) · `[ ]` da fare · `TODO_GIOVANNI` = serve un t
 - [x] Scelto Netlify free (uso commerciale ammesso; Vercel Hobby no) + `netlify.toml` con pubblicazione solo su commit `[deploy]` (2026-11-04)
 - [x] Sito online su https://studiokore.netlify.app (runtime Next.js attivo, header di sicurezza ok) (2026-11-08)
 - [x] Webhook Stripe test creato per studiokore (2026-11-08)
-- [ ] Segreti nel pannello Netlify: SUPABASE_SERVICE_ROLE_KEY, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET (Giovanni)
+- [x] Segreti nel pannello Netlify: SUPABASE_SERVICE_ROLE_KEY, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET (2026-11-08)
 - [ ] Supabase Auth: Site URL e Redirect URL su studiokore (Giovanni o token sbp_)
 - [ ] Dominio personalizzato (facoltativo)
 
