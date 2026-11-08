@@ -9,3 +9,8 @@
 [build.environment]
   NODE_VERSION = "22"
   NEXT_TELEMETRY_DISABLED = "1"
+
+# Runtime Next.js di Netlify (SSR, server actions, proxy). Dichiarato esplicitamente perché
+# il progetto è stato creato da un branch senza Next.js e il rilevamento automatico non l'ha attivato.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
