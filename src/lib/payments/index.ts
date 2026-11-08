@@ -1,4 +1,5 @@
-import { stripeProvider } from "./stripe";
+import { stripeProvider, WebhookConfigError } from "./stripe";
+export { WebhookConfigError };
 import type { PaymentProvider } from "./types";
 
 /** Unico punto in cui si sceglie il provider (PAYMENT_PROVIDER=stripe di default). */

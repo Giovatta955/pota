@@ -102,6 +102,9 @@ async function resolvePrice(plan: Plan): Promise<string> {
   return id;
 }
 
+/** Errore di configurazione (variabile mancante): va distinto da una firma non valida. */
+export class WebhookConfigError extends Error {}
+
 function client() {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) throw new Error("STRIPE_SECRET_KEY mancante");
@@ -142,8 +145,10 @@ export const stripeProvider: PaymentProvider = {
 
   async parseWebhook(rawBody, signature) {
     const secret = process.env.STRIPE_WEBHOOK_SECRET;
-    if (!secret || !signature) throw new Error("firma o secret mancanti");
-    const event = client().webhooks.constructEvent(rawBody, signature, secret); // lancia se la firma non è valida
+    if (!secret) throw new WebhookConfigError("STRIPE_WEBHOOK_SECRET mancante nell'ambiente del server");
+    if (!signature) throw new Error("firma mancante");
+    // verifica statica: non serve la chiave API per controllare la firma
+    const event = Stripe.webhooks.constructEvent(rawBody, signature, secret); // lancia se la firma non è valida
     switch (event.type) {
       case "checkout.session.completed":
       case "checkout.session.async_payment_succeeded":

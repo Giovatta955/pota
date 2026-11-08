@@ -55,6 +55,20 @@ describe("webhook firmato", () => {
     await expect(stripeProvider.parseWebhook(payload, sig.replace(/v1=\w+/, "v1=deadbeef"))).rejects.toThrow();
     await expect(stripeProvider.parseWebhook(payload, null)).rejects.toThrow();
   });
+  it("senza STRIPE_WEBHOOK_SECRET lancia un errore di configurazione distinto", async () => {
+    const { WebhookConfigError } = await import("@/lib/payments/stripe");
+    const saved = process.env.STRIPE_WEBHOOK_SECRET;
+    delete process.env.STRIPE_WEBHOOK_SECRET;
+    await expect(stripeProvider.parseWebhook(payload, "t=1,v1=x")).rejects.toBeInstanceOf(WebhookConfigError);
+    process.env.STRIPE_WEBHOOK_SECRET = saved;
+  });
+  it("verifica la firma anche senza STRIPE_SECRET_KEY", async () => {
+    const saved = process.env.STRIPE_SECRET_KEY;
+    delete process.env.STRIPE_SECRET_KEY;
+    const sig = Stripe.webhooks.generateTestHeaderString({ payload, secret });
+    expect(await stripeProvider.parseWebhook(payload, sig)).toMatchObject({ userId: "u9" });
+    process.env.STRIPE_SECRET_KEY = saved;
+  });
 });
 
 describe("rimborsi", () => {

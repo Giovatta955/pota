@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getPaymentProvider } from "@/lib/payments";
+import { getPaymentProvider, WebhookConfigError } from "@/lib/payments";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(request: Request) {
@@ -7,7 +7,9 @@ export async function POST(request: Request) {
   let update;
   try {
     update = await getPaymentProvider().parseWebhook(raw, request.headers.get("stripe-signature"));
-  } catch {
+  } catch (e) {
+    // configurazione mancante → 500 (Stripe ritenta); firma sbagliata → 400
+    if (e instanceof WebhookConfigError) return NextResponse.json({ error: "configurazione mancante" }, { status: 500 });
     return NextResponse.json({ error: "firma non valida" }, { status: 400 });
   }
   if (!update) return NextResponse.json({ ok: true, ignored: true });
