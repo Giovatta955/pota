@@ -9,6 +9,11 @@
 [build.environment]
   NODE_VERSION = "22"
   NEXT_TELEMETRY_DISABLED = "1"
+  # Valori PUBBLICI (finiscono comunque nel browser): stanno qui per non dipendere dal pannello.
+  # I SEGRETI (SUPABASE_SERVICE_ROLE_KEY, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET) vanno SOLO nel pannello Netlify.
+  NEXT_PUBLIC_SUPABASE_URL = "https://kyjcoscljfrqeiittagh.supabase.co"
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_gTS0do9EtREJQnBuXY9JwA_fEKD3JeH"
+  NEXT_PUBLIC_SITE_URL = "https://studiokore.netlify.app"
 
 # Runtime Next.js di Netlify (SSR, server actions, proxy). Dichiarato esplicitamente perché
 # il progetto è stato creato da un branch senza Next.js e il rilevamento automatico non l'ha attivato.
