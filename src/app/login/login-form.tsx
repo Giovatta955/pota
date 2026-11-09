@@ -35,8 +35,12 @@ export function LoginForm() {
         </button>
         {state === "error" && <p role="alert" className="text-sm text-red-700">{msg}</p>}
       </form>
-      <div className="text-center text-xs text-slate-500">oppure</div>
-      <button onClick={google} className="w-full rounded-lg border border-slate-300 px-4 py-3 font-medium">Continua con Google</button>
+      {process.env.NEXT_PUBLIC_GOOGLE_LOGIN === "1" && (
+        <>
+          <div className="text-center text-xs text-slate-500">oppure</div>
+          <button onClick={google} className="w-full rounded-lg border border-slate-300 px-4 py-3 font-medium">Continua con Google</button>
+        </>
+      )}
     </div>
   );
 }
