@@ -37,10 +37,12 @@ export const questionSchema = z
   });
 export type Question = z.infer<typeof questionSchema>;
 
-export type MapNode = { title: string; note?: string; children?: MapNode[] };
+/** `rel`: frase di collegamento dal nodo padre (es. "si divide in"), mostrata sul ramo. */
+export type MapNode = { title: string; rel?: string; note?: string; children?: MapNode[] };
 export const mapNodeSchema: z.ZodType<MapNode> = z.lazy(() =>
   z.object({
     title: z.string().trim().min(1).max(200),
+    rel: z.string().trim().max(60).optional(),
     note: z.string().trim().max(600).optional(),
     children: z.array(mapNodeSchema).optional(),
   }),

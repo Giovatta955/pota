@@ -19,7 +19,8 @@
     "preflight": "tsx --env-file-if-exists=.env.local scripts/preflight.ts",
     "seed": "tsx --env-file-if-exists=.env.local scripts/seed.ts",
     "assemble": "tsx --env-file-if-exists=.env.local scripts/assemble.ts",
-    "export-sql": "tsx scripts/export-sql.ts"
+    "export-sql": "tsx scripts/export-sql.ts",
+    "extend": "tsx scripts/extend.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.4.0",
@@ -29,6 +30,7 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "stripe": "^23.1.0",
     "unpdf": "^1.9.1",
     "zod": "^4.6.7"

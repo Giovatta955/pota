@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import ReactMarkdown from "react-markdown";
+import { SummaryView } from "@/components/summary-view";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth";
 import { canReadSubtopic } from "@/lib/access";
@@ -131,7 +131,7 @@ async function Section({ v, level, subtopic, base, userId }: { v: string; level?
   const points = (data.key_points as string[]) ?? [];
   return (
     <article className="space-y-6">
-      <div className="space-y-3 [&_h2]:mt-4 [&_h2]:text-xl [&_h2]:font-bold [&_li]:ml-5 [&_li]:list-disc [&_p]:leading-relaxed"><ReactMarkdown>{data.markdown as string}</ReactMarkdown></div>
+      <SummaryView markdown={data.markdown as string} />
       {points.length > 0 && (
         <aside className="rounded-lg bg-indigo-50 p-4"><h2 className="font-semibold">Punti chiave</h2>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">{points.map((p, i) => <li key={i}>{p}</li>)}</ul></aside>
