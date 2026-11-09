@@ -16,7 +16,8 @@ Legenda: `[x]` fatto (con data) · `[ ]` da fare · `TODO_GIOVANNI` = serve un t
 ## Fase 2 — Pipeline contenuti (pilota: 1 argomento)
 - [x] ingest · generate · validate · review · import (idempotenti, --dry-run, stima costi) (2026-11-04) — `generate` non provato dal vivo: manca ANTHROPIC_API_KEY
 - [x] Pilota "Legislazione per l'inclusione": 6 sottoargomenti, 115 domande, 79 flashcard, scritti in sessione senza API, validati 0 errori (2026-11-09)
-- [ ] Import su Supabase e revisione a campione L4/L5
+- [x] Pilota caricato e pubblicato su studiokore (115 domande, 79 flashcard) (2026-11-09)
+- [ ] Revisione a campione L4/L5 da parte di Giovanni (segnalazioni da /admin)
 
 ## Fase 3 — Logica core (con test)
 - [x] SM-2 · debolezza/livelli · composizione esame · controllo accessi paywall — `src/lib/{srs,trainer,exam,access}` (2026-11-04)

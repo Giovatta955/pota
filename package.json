@@ -18,7 +18,8 @@
     "stripe:setup": "tsx --env-file-if-exists=.env.local scripts/stripe-setup.ts",
     "preflight": "tsx --env-file-if-exists=.env.local scripts/preflight.ts",
     "seed": "tsx --env-file-if-exists=.env.local scripts/seed.ts",
-    "assemble": "tsx --env-file-if-exists=.env.local scripts/assemble.ts"
+    "assemble": "tsx --env-file-if-exists=.env.local scripts/assemble.ts",
+    "export-sql": "tsx scripts/export-sql.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.4.0",
