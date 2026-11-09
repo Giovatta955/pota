@@ -29,6 +29,7 @@ npm run import -- <argomento>
 1. app.netlify.com → accedi con GitHub → **Add new project → Import an existing project → GitHub** → repo `pota`.
 2. **Branch to deploy**: il branch con il codice (oggi `claude/tfa-platform-setup-wexwn6`; dopo il merge, `master`). Nome progetto es. `tfa-sostegno` → URL `https://tfa-sostegno.netlify.app`. Le impostazioni di build arrivano da `netlify.toml`.
 3. **Environment variables**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_SITE_URL` (= URL Netlify o dominio). Non servono `ANTHROPIC_API_KEY` né `CLAUDE_MODEL`.
+   - Attenzione: in **Key** va il NOME (es. `STRIPE_WEBHOOK_SECRET`), il segreto va in **Values → Production**. Spunta "Contains secret values" (scope Builds/Functions/Runtime). Dopo ogni modifica alle variabili serve una nuova pubblicazione.
 4. **Crediti**: il sito si ripubblica solo se l'ultimo commit contiene `[deploy]` (vedi `netlify.toml`); dopo aver cambiato una variabile: Deploys → Trigger deploy. Controlla il consumo in Netlify → Usage; se finiscono il sito si ferma fino al mese dopo → passa a Personal (9 $/mese) quando hai abbonati.
 5. Dominio: Domain management → Add a domain, poi i DNS indicati.
 
