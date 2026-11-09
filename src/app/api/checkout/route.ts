@@ -1,3 +1,4 @@
+import { siteOrigin } from "@/lib/site-origin";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getSession } from "@/lib/auth";
@@ -7,7 +8,7 @@ import { getPaymentProvider } from "@/lib/payments";
 const bodySchema = z.object({ plan: z.enum(["monthly", "pass"]), consent: z.literal("on") });
 
 export async function POST(request: Request) {
-  const origin = process.env.NEXT_PUBLIC_SITE_URL ?? new URL(request.url).origin;
+  const origin = siteOrigin(request);
   const s = await getSession();
   if (!s) return NextResponse.redirect(`${origin}/login`, 303);
   const form = Object.fromEntries(await request.formData());

@@ -1,3 +1,4 @@
+import { siteOrigin } from "@/lib/site-origin";
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -5,7 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 /** Cancellazione account (GDPR art. 17). Le tabelle personali hanno ON DELETE CASCADE su auth.users. */
 export async function POST(request: Request) {
-  const origin = process.env.NEXT_PUBLIC_SITE_URL ?? new URL(request.url).origin;
+  const origin = siteOrigin(request);
   const s = await getSession();
   if (!s) return NextResponse.redirect(`${origin}/login`, 303);
   const form = await request.formData();
