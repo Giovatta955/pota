@@ -28,7 +28,7 @@ Legenda: `[x]` fatto (con data) · `[ ]` da fare · `TODO_GIOVANNI` = serve un t
 - [x] Esame simulato + report (2026-11-04)
 - [x] Dashboard (2026-11-04)
 
-- [ ] Collaudo end-to-end: Supabase creato e migrazione eseguita (2026-11-04, RLS verificata); mancano secret key, seed e login reale
+- [ ] Collaudo end-to-end: login reale su studiokore OK (2026-11-09), webhook Stripe reale consegnato OK (2026-11-09); mancano admin, contenuti, pagamento completo
 
 ## Fase 5 — Pagamenti
 - [x] `lib/payments` (Stripe Checkout, Portal, webhook) + paywall server-side (2026-11-04) — provato in test mode: prezzi, portale e checkout creati (2026-11-04); manca solo il test del webhook con evento reale
