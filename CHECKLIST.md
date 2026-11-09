@@ -47,7 +47,7 @@ Legenda: `[x]` fatto (con data) · `[ ]` da fare · `TODO_GIOVANNI` = serve un t
 - [ ] Verificare termini d'uso NotebookLM (uso commerciale) e che l'input siano i riassunti originali, non fonti protette (Giovanni)
 
 - [x] Piano gratuito: pulizia storico, pannello `/admin/spazio`, backup settimanale cifrato, avviso WAV — `0004_free_tier.sql` (2026-11-04)
-- [ ] Eseguire `0004_free_tier.sql` su Supabase (Giovanni)
+- [x] Eseguita `0004_free_tier.sql` su Supabase: pulizia settimanale attiva (job 1) (2026-11-09)
 - [ ] Segreti GitHub per il backup: `SUPABASE_DB_URL`, `BACKUP_PASSPHRASE` (Giovanni)
 - [ ] SMTP gratuito (es. Resend) in Supabase prima del lancio (Giovanni)
 
