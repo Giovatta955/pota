@@ -17,6 +17,8 @@ Legenda: `[x]` fatto (con data) · `[ ]` da fare · `TODO_GIOVANNI` = serve un t
 - [x] ingest · generate · validate · review · import (idempotenti, --dry-run, stima costi) (2026-11-04) — `generate` non provato dal vivo: manca ANTHROPIC_API_KEY
 - [x] Pilota "Legislazione per l'inclusione": 6 sottoargomenti, 115 domande, 79 flashcard, scritti in sessione senza API, validati 0 errori (2026-11-09)
 - [x] Pilota caricato e pubblicato su studiokore (115 domande, 79 flashcard) (2026-11-09)
+- [x] Tutti gli argomenti dalle slide INDIRE, rielaborati in sessione e pubblicati: 10 argomenti, 56 sottoargomenti, 865 domande, 586 flashcard; validazione 0 errori, nessuna frase copiata ≥12 parole (2026-11-09). I file restano fuori dal repo (`content/generated/` è in .gitignore)
+- [ ] Da fare: aggiungere SNV/PNRR al pacchetto legislazione (ora in "Pedagogia dell'inclusione"); controllare i doppioni tra "Gestione classe/ADHD-DSA" e "Neuropsichiatria"
 - [ ] Revisione a campione L4/L5 da parte di Giovanni (segnalazioni da /admin)
 
 ## Fase 3 — Logica core (con test)
@@ -30,7 +32,7 @@ Legenda: `[x]` fatto (con data) · `[ ]` da fare · `TODO_GIOVANNI` = serve un t
 - [x] Esame simulato + report (2026-11-04)
 - [x] Dashboard (2026-11-04)
 
-- [ ] Collaudo end-to-end: login reale su studiokore OK (2026-11-09), webhook Stripe reale consegnato OK (2026-11-09); admin attivo (2026-11-09); mancano contenuti e pagamento completo
+- [ ] Collaudo end-to-end: login reale su studiokore OK (2026-11-09), webhook Stripe reale consegnato OK (2026-11-09); admin attivo (2026-11-09); contenuti completi online (2026-11-09); manca un pagamento completo di prova
 
 ## Fase 5 — Pagamenti
 - [x] `lib/payments` (Stripe Checkout, Portal, webhook) + paywall server-side (2026-11-04) — provato in test mode: prezzi, portale e checkout creati (2026-11-04); manca solo il test del webhook con evento reale
