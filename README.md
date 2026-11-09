@@ -20,6 +20,8 @@ Il resto (pipeline, deploy) verrà documentato nelle fasi successive.
 5. `npm run review -- <argomento> [--level=4,5] [--sample=20]` → p=pubblica, r=rivista, d=scarta.
 6. `npm run import -- <argomento> [--dry-run]` → carica su Supabase solo le domande `published` (serve `SUPABASE_SERVICE_ROLE_KEY`).
 
+Senza API: i contenuti si possono scrivere a mano (o da Claude in sessione) nello stesso formato e trasformarli con `npm run assemble -- <argomento> <bozza.json>`, poi `validate`.
+
 Modello via `CLAUDE_MODEL` (default `claude-sonnet-5-5`). Output in `content/generated/` (git-ignored).
 
 ## Pagamenti (Stripe)
