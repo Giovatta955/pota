@@ -18,6 +18,7 @@ Legenda: `[x]` fatto (con data) · `[ ]` da fare · `TODO_GIOVANNI` = serve un t
 - [x] Pilota "Legislazione per l'inclusione": 6 sottoargomenti, 115 domande, 79 flashcard, scritti in sessione senza API, validati 0 errori (2026-11-09)
 - [x] Pilota caricato e pubblicato su studiokore (115 domande, 79 flashcard) (2026-11-09)
 - [x] Tutti gli argomenti dalle slide INDIRE, rielaborati in sessione e pubblicati: 10 argomenti, 56 sottoargomenti, 865 domande, 586 flashcard; validazione 0 errori, nessuna frase copiata ≥12 parole (2026-11-09). I file restano fuori dal repo (`content/generated/` è in .gitignore)
+- [x] Revisione qualità: 40 domande per sottoargomento (8 per livello), riassunti estesi con tabelle e riquadri, mappe concettuali con frasi di collegamento e rami espandibili, 20 flashcard per sottoargomento. Totale online: 2240 domande, 1146 flashcard; id esistenti invariati (storico utenti preservato); validazione 0 errori, controllo copia superato (2026-11-10)
 - [ ] Da fare: aggiungere SNV/PNRR al pacchetto legislazione (ora in "Pedagogia dell'inclusione"); controllare i doppioni tra "Gestione classe/ADHD-DSA" e "Neuropsichiatria"
 - [ ] Revisione a campione L4/L5 da parte di Giovanni (segnalazioni da /admin)
 
