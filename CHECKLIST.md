@@ -19,6 +19,7 @@ Legenda: `[x]` fatto (con data) · `[ ]` da fare · `TODO_GIOVANNI` = serve un t
 - [x] Pilota caricato e pubblicato su studiokore (115 domande, 79 flashcard) (2026-11-09)
 - [x] Tutti gli argomenti dalle slide INDIRE, rielaborati in sessione e pubblicati: 10 argomenti, 56 sottoargomenti, 865 domande, 586 flashcard; validazione 0 errori, nessuna frase copiata ≥12 parole (2026-11-09). I file restano fuori dal repo (`content/generated/` è in .gitignore)
 - [x] Revisione qualità: 40 domande per sottoargomento (8 per livello), riassunti estesi con tabelle e riquadri, mappe concettuali con frasi di collegamento e rami espandibili, 20 flashcard per sottoargomento. Totale online: 2240 domande, 1146 flashcard; id esistenti invariati (storico utenti preservato); validazione 0 errori, controllo copia superato (2026-11-10)
+- [x] Riscrittura distrattori su tutte le 2240 domande secondo lo stile del quiz personale: distrattori "quasi giusti" (concetto vicino, ordine o date sbagliate, relazione invertita) e di lunghezza bilanciata; la risposta corretta è la più lunga nel 42% dei casi (prima 76%). Id e lettera corretta invariati, controllo fatti e copia superati, validazione 0 errori, caricate su Supabase e rigenerato il dump MySQL della versione PHP (2026-11-11)
 - [ ] Da fare: aggiungere SNV/PNRR al pacchetto legislazione (ora in "Pedagogia dell'inclusione"); controllare i doppioni tra "Gestione classe/ADHD-DSA" e "Neuropsichiatria"
 - [ ] Revisione a campione L4/L5 da parte di Giovanni (segnalazioni da /admin)
 
