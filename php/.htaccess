@@ -1,0 +1,16 @@
+# Tutte le richieste passano da index.php, tranne i file esistenti in /assets.
+Options -Indexes
+DirectoryIndex index.php
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # Forza HTTPS (togli il commento quando il certificato è attivo)
+  # RewriteCond %{HTTPS} !=on
+  # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+  RewriteRule ^(app|sql|tools)(/|$) - [F,L]
+  RewriteCond %{REQUEST_FILENAME} -f
+  RewriteRule ^assets/ - [L]
+  RewriteRule ^ index.php [L,QSA]
+</IfModule>
+<FilesMatch "\.(sql|md|mjs)$">
+  Require all denied
+</FilesMatch>

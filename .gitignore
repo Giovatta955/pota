@@ -10,3 +10,7 @@ content/generated/
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store
+
+# versione PHP: segreti e contenuti fuori dal repo
+php/app/config.php
+php/sql/contenuti.sql*
