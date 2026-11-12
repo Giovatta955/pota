@@ -1,0 +1,737 @@
+<title>Diario dei sintomi</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: colonna unica da telefono, schede in basso, barra di stato del salvataggio in alto */
+:root {
+  --bg: #f3f5f2; --card: #ffffff; --text: #1d2420; --muted: #5d6a63;
+  --line: #dbe2dd; --accent: #2f6f62; --accent-soft: #dcebe6; --on-accent: #ffffff;
+  --danger: #b3412f; --danger-soft: #f6e1dc; --crash: #e9b8ad;
+  --font: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141917; --card: #1d2421; --text: #e6ebe8; --muted: #9aa8a1;
+    --line: #2d3632; --accent: #6fbfa9; --accent-soft: #223a33; --on-accent: #0d1a17;
+    --danger: #ef8a76; --danger-soft: #3a2420; --crash: #6b3a31; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141917; --card: #1d2421; --text: #e6ebe8; --muted: #9aa8a1;
+  --line: #2d3632; --accent: #6fbfa9; --accent-soft: #223a33; --on-accent: #0d1a17;
+  --danger: #ef8a76; --danger-soft: #3a2420; --crash: #6b3a31; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--text);
+  font: 16px/1.45 var(--font);
+  padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+main {
+  max-width: 680px; margin: 0 auto; padding-block: 12px 24px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1 { font-size: 1.55rem; margin: 8px 0 4px; text-wrap: balance; }
+h2 { font-size: 1.05rem; margin: 0 0 8px; }
+p.hint { color: var(--muted); margin: 0 0 14px; font-size: .94rem; max-width: 62ch; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin: 0 0 12px; min-width: 0; }
+label.f { display: block; font-weight: 700; margin: 0 0 6px; }
+.sub { color: var(--muted); font-size: .86rem; font-weight: 400; }
+input[type=text], input[type=number], input[type=date], textarea {
+  width: 100%; font: inherit; color: var(--text); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; min-width: 0;
+}
+textarea { min-height: 76px; resize: vertical; }
+input:focus, textarea:focus, button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+.btn { background: var(--accent); color: var(--on-accent); border: 0; border-radius: 10px; padding: 10px 14px; font-weight: 700; }
+.btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--line); font-weight: 400; }
+.btn.danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 6px 10px; font-size: .88rem; font-weight: 400; white-space: nowrap; }
+.btn.danger.armed { background: var(--danger); color: var(--card); font-weight: 700; }
+.btn:disabled { opacity: .5; cursor: default; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid2 > * { min-width: 0; }
+.scale { display: grid; grid-template-columns: repeat(11, 1fr); gap: 4px; }
+.scale button, .sev button {
+  border: 1px solid var(--line); background: var(--bg); border-radius: 8px;
+  padding: 8px 0; font-size: .92rem; min-width: 0; font-variant-numeric: tabular-nums;
+}
+.scale button[aria-pressed=true], .sev button[aria-pressed=true] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 700; }
+.scale-ends { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); font-size: .8rem; margin-top: 4px; }
+.sev { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.daynav { display: flex; gap: 8px; align-items: center; margin: 4px 0 14px; }
+.daynav input { flex: 1; }
+.daynav button { width: 44px; height: 42px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); font-size: 1.2rem; flex: none; }
+.daynav button:disabled { opacity: .35; cursor: default; }
+#status {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  font-size: .84rem; color: var(--muted); text-align: center; border-bottom: 1px solid var(--line);
+  padding-block: 6px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+#status::before { content: "● "; color: var(--muted); }
+#status.ok::before { color: var(--accent); }
+#status.busy::before { color: #c99a2e; }
+#status.err { color: var(--danger); font-weight: 700; background: var(--danger-soft); }
+#status.err::before { color: var(--danger); }
+nav.tabs {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  background: var(--card); border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);
+}
+nav.tabs a { text-align: center; padding: 14px 2px; color: var(--muted); text-decoration: none; font-size: .9rem; font-weight: 700; }
+nav.tabs a.active { color: var(--accent); box-shadow: inset 0 3px 0 var(--accent); }
+.empty { color: var(--muted); text-align: center; padding: 20px 0; }
+.card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; }
+.tag { font-size: .8rem; padding: 2px 8px; border-radius: 99px; background: var(--danger-soft); color: var(--danger); font-weight: 700; }
+.tag.done { background: var(--accent-soft); color: var(--accent); }
+.tablewrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+th, td { text-align: left; padding: 7px 4px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 400; font-size: .82rem; letter-spacing: .02em; }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.seg button { border: 0; background: transparent; padding: 7px 12px; }
+.seg button[aria-pressed=true] { background: var(--accent); color: var(--on-accent); font-weight: 700; }
+svg.chart { width: 100%; height: 150px; display: block; }
+.legend { display: flex; gap: 14px; font-size: .8rem; color: var(--muted); margin-top: 6px; flex-wrap: wrap; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.notice { background: var(--accent-soft); border-radius: 10px; padding: 10px 12px; font-size: .9rem; margin-top: 10px; }
+.notice.warn { background: var(--danger-soft); }
+#copyBox { width: 100%; min-height: 160px; margin-top: 10px; font-size: .85rem; }
+@media (max-width: 420px) {
+  .scale button { font-size: .8rem; padding: 7px 0; }
+  .grid2 { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div id="status" role="status" aria-live="polite">Caricamento…</div>
+<main>
+
+<section id="oggi">
+  <h1 id="oggi-title">Oggi</h1>
+  <div class="daynav">
+    <button type="button" id="prevDay" aria-label="Giorno precedente">‹</button>
+    <input type="date" id="dayInput" aria-label="Giorno" />
+    <button type="button" id="nextDay" aria-label="Giorno successivo">›</button>
+  </div>
+  <div id="oggi-body"></div>
+</section>
+
+<section id="crolli" hidden>
+  <h1>Crolli</h1>
+  <p class="hint">Peggioramenti e crash (malessere post-sforzo). Segna quando è iniziato, quando è finito e cosa potrebbe averlo causato.</p>
+  <button type="button" class="btn" id="addCrollo">+ Nuovo crollo</button>
+  <div id="crolli-list" style="margin-top:12px"></div>
+</section>
+
+<section id="limiti" hidden>
+  <h1>Prima / adesso</h1>
+  <p class="hint">Cosa riuscivi a fare prima e cosa riesci a fare adesso. Utile per medici, certificazioni e invalidità.</p>
+  <div id="limiti-list"></div>
+  <button type="button" class="btn ghost" id="addLimite">+ Aggiungi attività</button>
+</section>
+
+<section id="riepilogo" hidden>
+  <h1>Riepilogo</h1>
+  <div class="row" style="margin-bottom:12px">
+    <div class="seg" id="periodo">
+      <button type="button" data-p="7">7 gg</button>
+      <button type="button" data-p="30">30 gg</button>
+      <button type="button" data-p="90">90 gg</button>
+      <button type="button" data-p="0">Tutto</button>
+    </div>
+  </div>
+  <div id="riepilogo-body"></div>
+  <div class="card">
+    <h2>Testo per il medico</h2>
+    <p class="hint">Riassunto del periodo scelto, da incollare in un messaggio o in un documento.</p>
+    <button type="button" class="btn" id="copyText">Copia testo</button>
+    <textarea id="copyBox" hidden readonly aria-label="Testo per il medico"></textarea>
+  </div>
+  <div class="card">
+    <h2>Backup</h2>
+    <p class="hint" id="backupHint">Ogni modifica viene salvata subito. Un backup ogni tanto è comunque una buona idea.</p>
+    <div class="row">
+      <button type="button" class="btn ghost" id="exportJson">Scarica backup</button>
+      <button type="button" class="btn ghost" id="importBtn">Ripristina backup</button>
+      <input type="file" id="importFile" accept="application/json,.json" hidden />
+    </div>
+    <div id="importConfirm" class="notice warn" hidden>
+      <p style="margin:0 0 8px">Il backup sostituirà tutti i dati attuali. Continuare?</p>
+      <div class="row">
+        <button type="button" class="btn" id="importYes">Sì, sostituisci</button>
+        <button type="button" class="btn ghost" id="importNo">Annulla</button>
+      </div>
+    </div>
+    <div id="backupMsg" class="notice" hidden></div>
+  </div>
+</section>
+
+</main>
+
+<nav class="tabs">
+  <a href="#oggi">Oggi</a>
+  <a href="#crolli">Crolli</a>
+  <a href="#limiti">Prima/adesso</a>
+  <a href="#riepilogo">Riepilogo</a>
+</nav>
+
+<script>
+(function () {
+  "use strict";
+  var KEY = "diario-sintomi-v1";
+
+  var SINTOMI = [
+    { id: "energia", nome: "Energia", lo: "nessuna", hi: "piena" },
+    { id: "fatica", nome: "Fatica", lo: "nessuna", hi: "estrema" },
+    { id: "dolore", nome: "Dolore", lo: "nessuno", hi: "insopportabile" },
+    { id: "nebbia", nome: "Nebbia mentale", lo: "lucido", hi: "molto confuso" },
+    { id: "sonno", nome: "Qualità del sonno", lo: "pessima", hi: "ottima" },
+    { id: "ortostatismo", nome: "Stare in piedi (capogiri, tachicardia)", lo: "nessun problema", hi: "impossibile" },
+    { id: "pem", nome: "Malessere post-sforzo", lo: "assente", hi: "grave" }
+  ];
+  var LIMITI_INIZIALI = ["Camminare", "Stare in piedi", "Lavoro / studio", "Lavori di casa", "Cucinare", "Doccia e cura di sé", "Leggere / schermi", "Vita sociale", "Guidare / uscire"];
+
+  // ---------- utilità ----------
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function iso(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  function parse(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function today() { return iso(new Date()); }
+  function addDays(s, n) { var d = parse(s); d.setDate(d.getDate() + n); return iso(d); }
+  function fmt(s, long) {
+    if (!s) return "";
+    return parse(s).toLocaleDateString("it-IT", long ? { weekday: "long", day: "numeric", month: "long", year: "numeric" } : { day: "2-digit", month: "2-digit", year: "numeric" });
+  }
+  function diffDays(a, b) { return Math.round((parse(b) - parse(a)) / 86400000); }
+  function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  function clock() { return new Date().toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit", second: "2-digit" }); }
+  function clone(x) { return JSON.parse(JSON.stringify(x)); }
+
+  // ---------- stato ----------
+  function fresh() {
+    return {
+      version: 1, days: {}, crolli: [],
+      limiti: LIMITI_INIZIALI.map(function (a) { return { id: uid(), attivita: a, prima: "", adesso: "" }; })
+    };
+  }
+  function normalize(s) {
+    if (!s || typeof s !== "object") return null;
+    s.days = s.days && typeof s.days === "object" ? s.days : {};
+    s.crolli = Array.isArray(s.crolli) ? s.crolli : [];
+    s.limiti = Array.isArray(s.limiti) ? s.limiti : [];
+    return s;
+  }
+  var state = (function () {
+    try { var raw = localStorage.getItem(KEY); if (raw) { var s = normalize(JSON.parse(raw)); if (s) return s; } } catch (e) {}
+    return fresh();
+  })();
+  function saveLocal() { try { localStorage.setItem(KEY, JSON.stringify(state)); return true; } catch (e) { return false; } }
+
+  // ---------- stato del salvataggio ----------
+  var statusEl = document.getElementById("status");
+  var cloud = "connecting"; // connecting | online | offline | error
+  var lastSaved = null, cloudError = "";
+  function showStatus() {
+    var busy = cloud === "online" && (Object.keys(dirty).length || Object.keys(inflight).length);
+    if (cloud === "error") { statusEl.className = "err"; statusEl.textContent = cloudError; return; }
+    if (busy) { statusEl.className = "busy"; statusEl.textContent = "Salvataggio in corso…"; return; }
+    if (cloud === "online") { statusEl.className = "ok"; statusEl.textContent = lastSaved ? "Salvato alle " + lastSaved : "Salvataggio automatico attivo"; return; }
+    if (cloud === "connecting") { statusEl.className = "busy"; statusEl.textContent = "Collegamento al salvataggio online…"; return; }
+    statusEl.className = "ok";
+    statusEl.textContent = (lastSaved ? "Salvato alle " + lastSaved + " · " : "") + "solo su questo dispositivo";
+  }
+
+  // ---------- sincronizzazione online (db privato per persona) ----------
+  var db = null, base = null, mainRef = null, mesiRef = null;
+  var dirty = {}, inflight = {}, timers = {}, dirtyDays = {};
+  var ready = false;              // prima riconciliazione con i dati online fatta
+  var knownMonths = {};           // mesi presenti online
+  var initMain = null, initMesi = null;
+
+  function monthOf(day) { return day.slice(0, 7); }
+  function markDay(day) {
+    dirtyDays[day] = true;
+    mark(monthOf(day));
+  }
+  function mark(key) {
+    if (saveLocal()) lastSaved = clock();
+    else if (cloud !== "online") { cloud = "error"; cloudError = "Attenzione: impossibile salvare. Scarica un backup dal Riepilogo."; }
+    dirty[key] = true;
+    if (!db) { showStatus(); return; }
+    clearTimeout(timers[key]);
+    timers[key] = setTimeout(function () { flush(key); }, 350); // raggruppa la digitazione veloce in un'unica scrittura
+    showStatus();
+  }
+  function bodyFor(key) {
+    if (key === "main") return { crolli: clone(state.crolli), limiti: clone(state.limiti), version: 1 };
+    var days = {};
+    Object.keys(state.days).forEach(function (d) { if (monthOf(d) === key) days[d] = clone(state.days[d]); });
+    return { days: days };
+  }
+  function refFor(key) { return key === "main" ? mainRef : mesiRef.doc(key); }
+  function flush(key, retried) {
+    if (!ready || !dirty[key]) return;
+    if (inflight[key]) return; // ripartirà alla fine della scrittura in corso
+    delete dirty[key]; inflight[key] = true;
+    var sentDays = [];
+    if (key !== "main") Object.keys(dirtyDays).forEach(function (d) { if (monthOf(d) === key) { sentDays.push(d); delete dirtyDays[d]; } });
+    refFor(key).set(bodyFor(key)).then(function () {
+      if (key !== "main") knownMonths[key] = true;
+      lastSaved = clock();
+      if (cloud !== "online") { cloud = "online"; }
+    }, function (e) {
+      dirty[key] = true;
+      sentDays.forEach(function (d) { dirtyDays[d] = true; });
+      var code = e && e.code;
+      if ((code === "unavailable" || !code) && !retried) {
+        setTimeout(function () { delete inflight[key]; flush(key, true); }, 800 + Math.random() * 1200);
+        return "retry";
+      }
+      cloud = "error";
+      cloudError = code === "quota_exceeded" ? "Spazio online esaurito: i dati sono salvati solo su questo dispositivo. Scarica un backup."
+        : "Salvataggio online non riuscito: i dati restano su questo dispositivo. Riprovo alla prossima modifica.";
+    }).then(function (r) {
+      if (r === "retry") return;
+      delete inflight[key];
+      if (dirty[key]) flush(key);
+      showStatus();
+    });
+    showStatus();
+  }
+  function flushAll() { Object.keys(dirty).forEach(function (k) { clearTimeout(timers[k]); flush(k); }); }
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") { saveLocal(); flushAll(); } });
+  window.addEventListener("pagehide", function () { saveLocal(); flushAll(); });
+
+  // ri-disegna senza disturbare chi sta scrivendo
+  var pendingRender = false;
+  function typing() { var a = document.activeElement; return a && (a.tagName === "TEXTAREA" || (a.tagName === "INPUT" && a.type !== "date")); }
+  function softRender() { if (typing()) { pendingRender = true; return; } pendingRender = false; renderAll(); }
+  document.addEventListener("focusout", function () { setTimeout(function () { if (pendingRender && !typing()) { pendingRender = false; renderAll(); } }, 0); });
+
+  function applyMain(data) {
+    if (!data) return;
+    state.crolli = Array.isArray(data.crolli) ? clone(data.crolli) : [];
+    state.limiti = Array.isArray(data.limiti) ? clone(data.limiti) : [];
+  }
+  function applyMonth(key, data) {
+    Object.keys(state.days).forEach(function (d) { if (monthOf(d) === key && !dirtyDays[d]) delete state.days[d]; });
+    var days = (data && data.days) || {};
+    Object.keys(days).forEach(function (d) { if (!dirtyDays[d]) state.days[d] = clone(days[d]); });
+  }
+
+  function reconcile() {
+    if (ready || !initMain || !initMesi) return;
+    var mainSnap = initMain, q = initMesi;
+    if (!mainSnap.exists) {
+      // Primo uso online: unisce eventuali dati già presenti su questo dispositivo e li carica
+      q.docs.forEach(function (doc) {
+        knownMonths[doc.id] = true;
+        var days = (doc.data() || {}).days || {};
+        Object.keys(days).forEach(function (d) { if (!state.days[d]) state.days[d] = clone(days[d]); });
+      });
+      Object.keys(state.days).forEach(function (d) { dirtyDays[d] = true; dirty[monthOf(d)] = true; });
+      dirty.main = true;
+    } else {
+      if (!dirty.main) applyMain(mainSnap.data());
+      var seen = {};
+      q.docs.forEach(function (doc) { seen[doc.id] = true; knownMonths[doc.id] = true; if (!inflight[doc.id]) applyMonth(doc.id, doc.data()); });
+      Object.keys(state.days).forEach(function (d) { if (!seen[monthOf(d)] && !dirtyDays[d]) delete state.days[d]; });
+      // le modifiche fatte prima del collegamento vanno comunque inviate
+      Object.keys(dirtyDays).forEach(function (d) { dirty[monthOf(d)] = true; });
+    }
+    ready = true; cloud = "online";
+    saveLocal(); softRender(); flushAll(); showStatus();
+  }
+
+  function startCloud(dbNs, id) {
+    db = dbNs;
+    base = "data/users/" + id;
+    mainRef = db.doc(base + "/diario");
+    mesiRef = mainRef.collection("mesi");
+    var timeout = setTimeout(function () {
+      if (!ready) { cloud = "offline"; showStatus(); statusEl.textContent = "Non raggiungo il salvataggio online: salvo su questo dispositivo e sincronizzo appena possibile."; }
+    }, 10000);
+    mainRef.onSnapshot(function (s) {
+      if (!ready) { if (!s.metadata.fromCache) { initMain = s; clearTimeout(timeout); reconcile(); } return; }
+      if (s.metadata.hasPendingWrites || dirty.main || inflight.main || !s.exists) return;
+      applyMain(s.data()); saveLocal(); softRender();
+    }, function () { clearTimeout(timeout); goOffline(); });
+    mesiRef.onSnapshot(function (q) {
+      if (!ready) { if (!q.metadata.fromCache) { initMesi = q; reconcile(); } return; }
+      if (q.metadata.hasPendingWrites) return;
+      var changed = false;
+      q.docChanges().forEach(function (ch) {
+        var k = ch.doc.id;
+        if (dirty[k] || inflight[k]) return;
+        if (ch.type === "removed") { delete knownMonths[k]; applyMonth(k, null); }
+        else { knownMonths[k] = true; applyMonth(k, ch.doc.data()); }
+        changed = true;
+      });
+      if (changed) { saveLocal(); softRender(); }
+    }, function () { goOffline(); });
+  }
+  function goOffline() {
+    db = null; ready = false; dirty = {}; cloud = "offline"; showStatus();
+  }
+
+  (async function connect() {
+    var c = window.claude;
+    if (!c || !c.use) { cloud = "offline"; showStatus(); return; }
+    try {
+      var results = await Promise.all([c.use("db"), c.use("user")]);
+      var dbNs = results[0], user = results[1];
+      var id = user ? await user.id() : null;
+      if (!dbNs || !id) { cloud = "offline"; showStatus(); return; }
+      startCloud(dbNs, id);
+    } catch (e) { cloud = "offline"; showStatus(); }
+  })();
+
+  // ---------- OGGI ----------
+  var currentDay = today();
+  var dayInput = document.getElementById("dayInput");
+
+  function dayData() {
+    var d = state.days[currentDay];
+    if (!d) d = state.days[currentDay] = { scores: {} };
+    if (!d.scores) d.scores = {};
+    return d;
+  }
+  function cleanupDay() {
+    var d = state.days[currentDay];
+    if (!d) return;
+    var empty = !Object.keys(d.scores || {}).length && (d.passi === "" || d.passi == null) && (d.sdraiato === "" || d.sdraiato == null) && !d.attivita && !d.note;
+    if (empty) delete state.days[currentDay];
+  }
+
+  function renderOggi() {
+    var t = today();
+    document.getElementById("oggi-title").textContent = currentDay === t ? "Oggi" : currentDay === addDays(t, -1) ? "Ieri" : cap(fmt(currentDay, true));
+    dayInput.value = currentDay; dayInput.max = t;
+    document.getElementById("nextDay").disabled = currentDay >= t;
+    var d = state.days[currentDay] || { scores: {} };
+    var sc = d.scores || {};
+    var html = "";
+    SINTOMI.forEach(function (s) {
+      var v = sc[s.id];
+      html += '<div class="card"><label class="f">' + esc(s.nome) + ' <span class="sub">' + (v == null ? "· non segnato" : v + "/10") + '</span></label><div class="scale" role="group" aria-label="' + esc(s.nome) + '">';
+      for (var i = 0; i <= 10; i++) html += '<button type="button" data-sym="' + s.id + '" data-v="' + i + '" aria-pressed="' + (v === i) + '">' + i + "</button>";
+      html += '</div><div class="scale-ends"><span>0 = ' + esc(s.lo) + "</span><span>10 = " + esc(s.hi) + "</span></div></div>";
+    });
+    html += '<div class="card"><div class="grid2">' +
+      '<div><label class="f" for="f-passi">Passi</label><input type="number" inputmode="numeric" min="0" id="f-passi" data-field="passi" value="' + esc(d.passi) + '" placeholder="es. 1500" /></div>' +
+      '<div><label class="f" for="f-sdraiato">Ore sdraiato/a</label><input type="number" inputmode="decimal" min="0" max="24" step="0.5" id="f-sdraiato" data-field="sdraiato" value="' + esc(d.sdraiato) + '" placeholder="es. 16" /></div>' +
+      "</div></div>" +
+      '<div class="card"><label class="f" for="f-attivita">Cosa ho fatto <span class="sub">(attività, sforzi, uscite)</span></label><textarea id="f-attivita" data-field="attivita" placeholder="es. doccia, 10 minuti al telefono, visita medica">' + esc(d.attivita) + "</textarea></div>" +
+      '<div class="card"><label class="f" for="f-note">Note <span class="sub">(farmaci, ciclo, eventi, altri sintomi)</span></label><textarea id="f-note" data-field="note">' + esc(d.note) + "</textarea></div>";
+    document.getElementById("oggi-body").innerHTML = html;
+  }
+
+  document.getElementById("oggi-body").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-sym]");
+    if (!b) return;
+    var d = dayData(), v = +b.dataset.v, id = b.dataset.sym;
+    if (d.scores[id] === v) delete d.scores[id]; else d.scores[id] = v;   // ri-toccare = annulla
+    d.updated = new Date().toISOString();
+    cleanupDay(); markDay(currentDay);
+    var cur = state.days[currentDay] && state.days[currentDay].scores[id];
+    b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(+x.dataset.v === cur)); });
+    b.parentNode.parentNode.querySelector(".sub").textContent = cur == null ? "· non segnato" : cur + "/10";
+  });
+  document.getElementById("oggi-body").addEventListener("input", function (e) {
+    var f = e.target.dataset.field;
+    if (!f) return;
+    var d = dayData(), v = e.target.value;
+    if (f === "passi" || f === "sdraiato") v = v === "" ? "" : Number(v);
+    d[f] = v; d.updated = new Date().toISOString();
+    cleanupDay(); markDay(currentDay);
+  });
+  function goDay(s) { if (!s) return; if (s > today()) s = today(); currentDay = s; renderOggi(); }
+  dayInput.addEventListener("change", function () { goDay(dayInput.value); });
+  document.getElementById("prevDay").addEventListener("click", function () { goDay(addDays(currentDay, -1)); });
+  document.getElementById("nextDay").addEventListener("click", function () { goDay(addDays(currentDay, 1)); });
+
+  // conferma in due tocchi (la pagina non può mostrare finestre di conferma)
+  function armed(btn) {
+    if (btn.classList.contains("armed")) return true;
+    btn.classList.add("armed"); btn.dataset.label = btn.textContent; btn.textContent = "Conferma";
+    setTimeout(function () { if (btn.isConnected) { btn.classList.remove("armed"); btn.textContent = btn.dataset.label; } }, 3000);
+    return false;
+  }
+
+  // ---------- CROLLI ----------
+  function renderCrolli() {
+    var list = state.crolli.slice().sort(function (a, b) { return (b.inizio || "").localeCompare(a.inizio || ""); });
+    var el = document.getElementById("crolli-list");
+    if (!list.length) { el.innerHTML = '<p class="empty">Nessun crollo registrato. Premi «Nuovo crollo» quando ne inizia uno.</p>'; return; }
+    el.innerHTML = list.map(function (c) {
+      var sev = "";
+      for (var i = 1; i <= 5; i++) sev += '<button type="button" data-sev="' + i + '" aria-pressed="' + (c.gravita === i) + '">' + i + "</button>";
+      return '<div class="card" data-id="' + esc(c.id) + '">' +
+        '<div class="card-head">' + statoCrollo(c) + '<button type="button" class="btn danger" data-del>Elimina</button></div>' +
+        '<div class="grid2"><div><label class="f" for="ci-' + esc(c.id) + '">Inizio</label><input type="date" id="ci-' + esc(c.id) + '" data-k="inizio" value="' + esc(c.inizio) + '" /></div>' +
+        '<div><label class="f" for="cf-' + esc(c.id) + '">Fine <span class="sub">(vuoto = in corso)</span></label><input type="date" id="cf-' + esc(c.id) + '" data-k="fine" value="' + esc(c.fine) + '" /></div></div>' +
+        '<label class="f" style="margin-top:10px">Gravità <span class="sub">1 = lieve · 5 = costretto/a a letto</span></label><div class="sev">' + sev + "</div>" +
+        '<label class="f" style="margin-top:10px" for="cc-' + esc(c.id) + '">Causa probabile</label><input type="text" id="cc-' + esc(c.id) + '" data-k="causa" value="' + esc(c.causa) + '" placeholder="es. visita in ospedale, doccia lunga, stress" />' +
+        '<label class="f" style="margin-top:10px" for="cn-' + esc(c.id) + '">Sintomi e note</label><textarea id="cn-' + esc(c.id) + '" data-k="note">' + esc(c.note) + "</textarea></div>";
+    }).join("");
+  }
+  function statoCrollo(c) {
+    if (!c.fine) return '<span class="tag">In corso' + (c.inizio ? " · giorno " + (diffDays(c.inizio, today()) + 1) : "") + "</span>";
+    if (!c.inizio) return '<span class="tag done">Concluso</span>';
+    return '<span class="tag done">Durata ' + (diffDays(c.inizio, c.fine) + 1) + " gg</span>";
+  }
+  function findCrollo(el) { var card = el.closest("[data-id]"); return card && state.crolli.find(function (c) { return c.id === card.dataset.id; }); }
+  document.getElementById("addCrollo").addEventListener("click", function () {
+    state.crolli.push({ id: uid(), inizio: today(), fine: "", gravita: null, causa: "", note: "" });
+    mark("main"); renderCrolli();
+  });
+  var crolliList = document.getElementById("crolli-list");
+  crolliList.addEventListener("input", function (e) {
+    var c = findCrollo(e.target), k = e.target.dataset.k;
+    if (!c || !k) return;
+    c[k] = e.target.value; mark("main");
+    if (k === "inizio" || k === "fine") e.target.closest(".card").querySelector(".card-head .tag").outerHTML = statoCrollo(c);
+  });
+  crolliList.addEventListener("click", function (e) {
+    var c = findCrollo(e.target);
+    if (!c) return;
+    var del = e.target.closest("[data-del]");
+    if (del) {
+      if (armed(del)) { state.crolli = state.crolli.filter(function (x) { return x !== c; }); mark("main"); renderCrolli(); }
+      return;
+    }
+    var b = e.target.closest("button[data-sev]");
+    if (b) {
+      var v = +b.dataset.sev;
+      c.gravita = c.gravita === v ? null : v; mark("main");
+      b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(+x.dataset.sev === c.gravita)); });
+    }
+  });
+
+  // ---------- PRIMA / ADESSO ----------
+  function renderLimiti() {
+    var el = document.getElementById("limiti-list");
+    if (!state.limiti.length) { el.innerHTML = '<p class="empty">Nessuna attività. Aggiungine una qui sotto.</p>'; return; }
+    el.innerHTML = state.limiti.map(function (l) {
+      var i = esc(l.id);
+      return '<div class="card" data-id="' + i + '"><div class="card-head" style="margin-bottom:8px">' +
+        '<input type="text" id="la-' + i + '" data-k="attivita" value="' + esc(l.attivita) + '" placeholder="Attività" style="font-weight:700" aria-label="Attività" />' +
+        '<button type="button" class="btn danger" data-del aria-label="Elimina attività">Elimina</button></div>' +
+        '<div class="grid2"><div><label class="f" for="lp-' + i + '">Prima</label><textarea id="lp-' + i + '" data-k="prima" placeholder="es. 10 km a piedi">' + esc(l.prima) + "</textarea></div>" +
+        '<div><label class="f" for="ln-' + i + '">Adesso</label><textarea id="ln-' + i + '" data-k="adesso" placeholder="es. 200 m, poi devo sdraiarmi">' + esc(l.adesso) + "</textarea></div></div></div>";
+    }).join("");
+  }
+  function findLimite(el) { var card = el.closest("[data-id]"); return card && state.limiti.find(function (l) { return l.id === card.dataset.id; }); }
+  var limitiList = document.getElementById("limiti-list");
+  limitiList.addEventListener("input", function (e) {
+    var l = findLimite(e.target), k = e.target.dataset.k;
+    if (l && k) { l[k] = e.target.value; mark("main"); }
+  });
+  limitiList.addEventListener("click", function (e) {
+    var del = e.target.closest("[data-del]");
+    if (!del) return;
+    var l = findLimite(e.target);
+    if (l && armed(del)) { state.limiti = state.limiti.filter(function (x) { return x !== l; }); mark("main"); renderLimiti(); }
+  });
+  document.getElementById("addLimite").addEventListener("click", function () {
+    state.limiti.push({ id: uid(), attivita: "", prima: "", adesso: "" }); mark("main"); renderLimiti();
+    var inputs = limitiList.querySelectorAll('input[data-k="attivita"]');
+    if (inputs.length) inputs[inputs.length - 1].focus();
+  });
+
+  // ---------- RIEPILOGO ----------
+  var periodo = 30;
+  try { var p = localStorage.getItem(KEY + "-periodo"); if (p !== null) periodo = +p; } catch (e) {}
+
+  function range() {
+    var end = today(), start;
+    if (periodo) start = addDays(end, -(periodo - 1));
+    else {
+      var keys = Object.keys(state.days).concat(state.crolli.map(function (c) { return c.inizio; }).filter(Boolean)).sort();
+      start = keys[0] && keys[0] < end ? keys[0] : end;
+    }
+    return { start: start, end: end };
+  }
+  function crolliIn(r) {
+    return state.crolli.filter(function (c) { return c.inizio && c.inizio <= r.end && (c.fine || today()) >= r.start; })
+      .sort(function (a, b) { return a.inizio.localeCompare(b.inizio); });
+  }
+  function isCrashDay(s) { return state.crolli.some(function (c) { return c.inizio && c.inizio <= s && (c.fine || today()) >= s; }); }
+  function stats(r) {
+    var out = {}, days = 0;
+    SINTOMI.forEach(function (s) { out[s.id] = { sum: 0, n: 0, min: null, max: null }; });
+    Object.keys(state.days).forEach(function (k) {
+      if (k < r.start || k > r.end) return;
+      days++;
+      var sc = state.days[k].scores || {};
+      SINTOMI.forEach(function (s) {
+        var v = sc[s.id]; if (v == null) return;
+        var o = out[s.id]; o.sum += v; o.n++;
+        o.min = o.min == null ? v : Math.min(o.min, v); o.max = o.max == null ? v : Math.max(o.max, v);
+      });
+    });
+    return { per: out, days: days };
+  }
+  function avg(o) { return o.n ? (o.sum / o.n).toFixed(1).replace(".", ",") : "—"; }
+
+  function chart(r) {
+    var n = Math.min(diffDays(r.start, r.end) + 1, 365), start = addDays(r.end, -(n - 1));
+    var W = 600, H = 140, bw = W / n, s = "";
+    for (var i = 0; i < n; i++) {
+      var day = addDays(start, i), x = i * bw;
+      if (isCrashDay(day)) s += '<rect x="' + x.toFixed(2) + '" y="0" width="' + bw.toFixed(2) + '" height="' + H + '" fill="var(--crash)" opacity=".55"/>';
+      var d = state.days[day], v = d && d.scores && d.scores.energia;
+      if (v != null) {
+        var h = Math.max(2, (v / 10) * (H - 4));
+        s += '<rect x="' + (x + bw * 0.15).toFixed(2) + '" y="' + (H - h).toFixed(2) + '" width="' + Math.max(1, bw * 0.7).toFixed(2) + '" height="' + h.toFixed(2) + '" rx="' + Math.min(3, bw * 0.2).toFixed(1) + '" fill="var(--accent)"><title>' + fmt(day) + ": energia " + v + "/10</title></rect>";
+      }
+    }
+    s += '<line x1="0" y1="' + (H - 0.5) + '" x2="' + W + '" y2="' + (H - 0.5) + '" stroke="var(--line)"/>';
+    return '<svg class="chart" viewBox="0 0 ' + W + " " + H + '" preserveAspectRatio="none" role="img" aria-label="Energia giorno per giorno">' + s + "</svg>" +
+      '<div class="legend"><span><i style="background:var(--accent)"></i>Energia (0–10)</span><span><i style="background:var(--crash)"></i>Giorni di crollo</span><span>' + fmt(start) + " → " + fmt(r.end) + "</span></div>";
+  }
+
+  function renderRiepilogo() {
+    document.querySelectorAll("#periodo button").forEach(function (b) { b.setAttribute("aria-pressed", String(+b.dataset.p === periodo)); });
+    var r = range(), st = stats(r), cr = crolliIn(r);
+    var crashDays = 0;
+    for (var d = r.start; d <= r.end; d = addDays(d, 1)) if (isCrashDay(d)) crashDays++;
+    var html = '<div class="card"><h2>Andamento</h2>' + chart(r) + "</div>";
+    html += '<div class="card"><h2>Sintomi <span class="sub">(' + st.days + (st.days === 1 ? " giorno registrato" : " giorni registrati") + ')</span></h2><div class="tablewrap"><table><thead><tr><th>Sintomo</th><th class="n">Media</th><th class="n">Min</th><th class="n">Max</th><th class="n">Giorni</th></tr></thead><tbody>';
+    SINTOMI.forEach(function (s) {
+      var o = st.per[s.id];
+      html += "<tr><td>" + esc(s.nome) + '</td><td class="n">' + avg(o) + '</td><td class="n">' + (o.min == null ? "—" : o.min) + '</td><td class="n">' + (o.max == null ? "—" : o.max) + '</td><td class="n">' + o.n + "</td></tr>";
+    });
+    html += "</tbody></table></div></div>";
+    html += '<div class="card"><h2>Crolli <span class="sub">(' + cr.length + " · " + crashDays + " giorni nel periodo)</span></h2>";
+    html += cr.length ? '<div class="tablewrap"><table><tbody>' + cr.map(function (c) {
+      return "<tr><td>" + fmt(c.inizio) + " → " + (c.fine ? fmt(c.fine) : "in corso") + "</td><td>" + (c.gravita ? "gravità " + c.gravita + "/5" : "") + "</td><td>" + esc(c.causa) + "</td></tr>";
+    }).join("") + "</tbody></table></div>" : '<p class="empty">Nessun crollo nel periodo.</p>';
+    html += "</div>";
+    var lim = state.limiti.filter(function (l) { return l.prima || l.adesso; });
+    if (lim.length) {
+      html += '<div class="card"><h2>Prima / adesso</h2><div class="tablewrap"><table><thead><tr><th>Attività</th><th>Prima</th><th>Adesso</th></tr></thead><tbody>' +
+        lim.map(function (l) { return "<tr><td><b>" + esc(l.attivita) + "</b></td><td>" + esc(l.prima) + "</td><td>" + esc(l.adesso) + "</td></tr>"; }).join("") + "</tbody></table></div></div>";
+    }
+    document.getElementById("riepilogo-body").innerHTML = html;
+  }
+  document.getElementById("periodo").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-p]"); if (!b) return;
+    periodo = +b.dataset.p;
+    try { localStorage.setItem(KEY + "-periodo", String(periodo)); } catch (x) {}
+    renderRiepilogo();
+  });
+
+  function testoMedico() {
+    var r = range(), st = stats(r), cr = crolliIn(r), L = [];
+    L.push("DIARIO DEI SINTOMI — dal " + fmt(r.start) + " al " + fmt(r.end));
+    L.push("Giorni registrati: " + st.days);
+    L.push("");
+    L.push("SINTOMI (scala 0–10: media, min–max, n. giorni)");
+    SINTOMI.forEach(function (s) {
+      var o = st.per[s.id];
+      if (o.n) L.push("- " + s.nome + " (0=" + s.lo + ", 10=" + s.hi + "): " + avg(o) + " (" + o.min + "–" + o.max + ", " + o.n + " gg)");
+    });
+    L.push("");
+    L.push("CROLLI: " + cr.length);
+    cr.forEach(function (c) {
+      L.push("- " + fmt(c.inizio) + " → " + (c.fine ? fmt(c.fine) + " (" + (diffDays(c.inizio, c.fine) + 1) + " gg)" : "in corso") +
+        (c.gravita ? ", gravità " + c.gravita + "/5" : "") + (c.causa ? ", causa: " + c.causa : "") + (c.note ? ". " + c.note.replace(/\s+/g, " ") : ""));
+    });
+    var lim = state.limiti.filter(function (l) { return l.prima || l.adesso; });
+    if (lim.length) {
+      L.push(""); L.push("PRIMA / ADESSO");
+      lim.forEach(function (l) { L.push("- " + l.attivita + ": prima " + (l.prima || "—").replace(/\s+/g, " ") + "; adesso " + (l.adesso || "—").replace(/\s+/g, " ")); });
+    }
+    return L.join("\n");
+  }
+  var copyBox = document.getElementById("copyBox");
+  document.getElementById("copyText").addEventListener("click", function () {
+    var t = testoMedico(), btn = this;
+    copyBox.value = t;
+    function fallback() { copyBox.hidden = false; copyBox.focus(); copyBox.select(); btn.textContent = "Seleziona e copia il testo qui sotto"; }
+    try {
+      navigator.clipboard.writeText(t).then(function () {
+        copyBox.hidden = true; btn.textContent = "Copiato ✓";
+        setTimeout(function () { btn.textContent = "Copia testo"; }, 1800);
+      }, fallback);
+    } catch (e) { fallback(); }
+  });
+
+  // ---------- backup ----------
+  var backupMsg = document.getElementById("backupMsg");
+  function msg(t, warn) { backupMsg.hidden = false; backupMsg.className = "notice" + (warn ? " warn" : ""); backupMsg.textContent = t; }
+  var downloads = null;
+  (async function () {
+    try { if (window.claude && window.claude.use) downloads = await window.claude.use("downloads"); } catch (e) {}
+    if (!downloads) document.getElementById("exportJson").hidden = true;
+  })();
+  document.getElementById("exportJson").addEventListener("click", function () {
+    if (!downloads) return;
+    var data = JSON.stringify({ version: 1, days: state.days, crolli: state.crolli, limiti: state.limiti }, null, 2);
+    downloads.save({ filename: "diario-sintomi-" + today() + ".json", data: data }).then(function () {
+      msg("Backup scaricato.");
+    }, function (e) {
+      if (e && e.code === "declined") return;
+      msg(e && e.code === "rate_limited" ? "Attendi un momento e riprova." : "Il download non è disponibile qui.", true);
+    });
+  });
+  var importFile = document.getElementById("importFile"), importConfirm = document.getElementById("importConfirm"), pendingImport = null;
+  document.getElementById("importBtn").addEventListener("click", function () { importFile.click(); });
+  importFile.addEventListener("change", function () {
+    var f = importFile.files[0]; if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      importFile.value = "";
+      try {
+        var s = normalize(JSON.parse(rd.result));
+        if (!s || !s.days) throw new Error("formato");
+        pendingImport = s; importConfirm.hidden = false; backupMsg.hidden = true;
+      } catch (e) { msg("Questo file non è un backup del diario.", true); }
+    };
+    rd.readAsText(f);
+  });
+  document.getElementById("importNo").addEventListener("click", function () { pendingImport = null; importConfirm.hidden = true; });
+  document.getElementById("importYes").addEventListener("click", function () {
+    if (!pendingImport) return;
+    var oldMonths = Object.keys(knownMonths);
+    Object.keys(state.days).forEach(function (d) { oldMonths.push(monthOf(d)); });
+    state = pendingImport; pendingImport = null; importConfirm.hidden = true;
+    var months = {};
+    oldMonths.forEach(function (m) { months[m] = true; });
+    Object.keys(state.days).forEach(function (d) { months[monthOf(d)] = true; dirtyDays[d] = true; });
+    mark("main");
+    Object.keys(months).forEach(function (m) { mark(m); });
+    renderAll(); msg("Backup ripristinato.");
+  });
+
+  // ---------- navigazione ----------
+  var VIEWS = ["oggi", "crolli", "limiti", "riepilogo"];
+  function route() {
+    var v = location.hash.slice(1);
+    if (VIEWS.indexOf(v) < 0) v = "oggi";
+    VIEWS.forEach(function (id) { document.getElementById(id).hidden = id !== v; });
+    document.querySelectorAll("nav.tabs a").forEach(function (a) { a.classList.toggle("active", a.getAttribute("href") === "#" + v); });
+    if (v === "riepilogo") renderRiepilogo();
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener("hashchange", route);
+
+  function renderAll() { renderOggi(); renderCrolli(); renderLimiti(); renderRiepilogo(); }
+  renderAll(); route(); showStatus();
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible" && dayInput.max !== today()) { if (currentDay === dayInput.max) currentDay = today(); renderOggi(); }
+  });
+})();
+</script>
