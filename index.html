@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#f6f4f0" />
+<title>Diario dei sintomi</title>
+<style>
+:root {
+  --bg: #f6f4f0; --card: #ffffff; --text: #1f2328; --muted: #646b73;
+  --line: #e2ded7; --accent: #2f6f62; --accent-soft: #dcebe6; --on-accent: #ffffff;
+  --danger: #b3412f; --danger-soft: #f6e1dc; --ok: #2f6f62; --crash: #e9b8ad;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15181b; --card: #1e2226; --text: #e7e9eb; --muted: #9aa3ab;
+    --line: #2f353b; --accent: #6fbfa9; --accent-soft: #233a35; --on-accent: #0d1a17;
+    --danger: #ef8a76; --danger-soft: #3a2420; --ok: #6fbfa9; --crash: #6b3a31;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15181b; --card: #1e2226; --text: #e7e9eb; --muted: #9aa3ab;
+  --line: #2f353b; --accent: #6fbfa9; --accent-soft: #233a35; --on-accent: #0d1a17;
+  --danger: #ef8a76; --danger-soft: #3a2420; --ok: #6fbfa9; --crash: #6b3a31;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--text);
+  font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  padding-bottom: calc(76px + env(safe-area-inset-bottom));
+}
+main { max-width: 680px; margin: 0 auto; padding: 12px 16px 24px; }
+h1 { font-size: 1.5rem; margin: 8px 0 4px; }
+h2 { font-size: 1.05rem; margin: 0 0 8px; }
+p.hint { color: var(--muted); margin: 0 0 14px; font-size: .92rem; }
+section[hidden] { display: none; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin: 0 0 12px; }
+label.f { display: block; font-weight: 600; margin: 0 0 6px; }
+.sub { color: var(--muted); font-size: .85rem; font-weight: 400; }
+input[type=text], input[type=number], input[type=date], textarea {
+  width: 100%; font: inherit; color: var(--text); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px;
+}
+textarea { min-height: 76px; resize: vertical; }
+input:focus, textarea:focus, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+.btn { background: var(--accent); color: var(--on-accent); border: 0; border-radius: 10px; padding: 10px 14px; font-weight: 600; }
+.btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--line); font-weight: 500; }
+.btn.danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); font-weight: 500; padding: 6px 10px; font-size: .88rem; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.scale { display: grid; grid-template-columns: repeat(11, 1fr); gap: 4px; }
+.scale button, .sev button {
+  border: 1px solid var(--line); background: var(--bg); border-radius: 8px;
+  padding: 8px 0; font-size: .92rem; min-width: 0;
+}
+.scale button[aria-pressed=true], .sev button[aria-pressed=true] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 700; }
+.scale-ends { display: flex; justify-content: space-between; color: var(--muted); font-size: .78rem; margin-top: 4px; }
+.sev { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.daynav { display: flex; gap: 8px; align-items: center; margin: 4px 0 14px; }
+.daynav input { flex: 1; }
+.daynav button { width: 44px; height: 42px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); font-size: 1.2rem; }
+.daynav button:disabled { opacity: .35; cursor: default; }
+#status {
+  position: sticky; top: 0; z-index: 5; background: var(--bg);
+  font-size: .82rem; color: var(--muted); padding: 6px 16px; text-align: center;
+  border-bottom: 1px solid var(--line);
+}
+#status.ok::before { content: "● "; color: var(--ok); }
+#status.err { color: var(--danger); font-weight: 600; background: var(--danger-soft); }
+nav.tabs {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  background: var(--card); border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+nav.tabs a { text-align: center; padding: 14px 4px; color: var(--muted); text-decoration: none; font-size: .9rem; font-weight: 600; }
+nav.tabs a.active { color: var(--accent); box-shadow: inset 0 3px 0 var(--accent); }
+.empty { color: var(--muted); text-align: center; padding: 20px 0; }
+.card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; }
+.tag { font-size: .78rem; padding: 2px 8px; border-radius: 99px; background: var(--danger-soft); color: var(--danger); font-weight: 600; }
+.tag.done { background: var(--accent-soft); color: var(--accent); }
+table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+th, td { text-align: left; padding: 7px 4px; border-bottom: 1px solid var(--line); }
+th { color: var(--muted); font-weight: 500; font-size: .82rem; }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.seg button { border: 0; background: transparent; padding: 7px 12px; }
+.seg button[aria-pressed=true] { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+svg.chart { width: 100%; height: 150px; display: block; }
+.legend { display: flex; gap: 14px; font-size: .8rem; color: var(--muted); margin-top: 6px; flex-wrap: wrap; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.stack > * + * { margin-top: 12px; }
+@media (max-width: 420px) {
+  .scale button { font-size: .8rem; padding: 7px 0; }
+  .grid2 { grid-template-columns: 1fr; }
+}
+@media print {
+  nav.tabs, #status, .noprint { display: none !important; }
+  body { padding: 0; background: #fff; color: #000; }
+  section { display: block !important; }
+  .card { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<div id="status" role="status" aria-live="polite">Caricamento…</div>
+<main>
+
+<section id="oggi">
+  <h1 id="oggi-title">Oggi</h1>
+  <div class="daynav">
+    <button type="button" id="prevDay" aria-label="Giorno precedente">‹</button>
+    <input type="date" id="dayInput" aria-label="Giorno" />
+    <button type="button" id="nextDay" aria-label="Giorno successivo">›</button>
+  </div>
+  <div id="oggi-body"></div>
+</section>
+
+<section id="crolli" hidden>
+  <h1>Crolli</h1>
+  <p class="hint">Peggioramenti / crash (malessere post-sforzo). Segna quando è iniziato, quando è finito e cosa potrebbe averlo causato.</p>
+  <button type="button" class="btn" id="addCrollo">+ Nuovo crollo</button>
+  <div id="crolli-list" style="margin-top:12px"></div>
+</section>
+
+<section id="limiti" hidden>
+  <h1>Prima / adesso</h1>
+  <p class="hint">Cosa riuscivi a fare prima e cosa riesci a fare adesso. Utile per medici, certificazioni e invalidità.</p>
+  <div id="limiti-list"></div>
+  <button type="button" class="btn ghost" id="addLimite">+ Aggiungi attività</button>
+</section>
+
+<section id="riepilogo" hidden>
+  <h1>Riepilogo</h1>
+  <div class="row noprint" style="margin-bottom:12px">
+    <div class="seg" id="periodo">
+      <button type="button" data-p="7">7 gg</button>
+      <button type="button" data-p="30">30 gg</button>
+      <button type="button" data-p="90">90 gg</button>
+      <button type="button" data-p="0">Tutto</button>
+    </div>
+  </div>
+  <div id="riepilogo-body"></div>
+  <div class="card noprint">
+    <h2>Backup e condivisione</h2>
+    <p class="hint">I dati sono salvati automaticamente su questo dispositivo, a ogni modifica. Fai ogni tanto un backup: se cancelli i dati del browser si perdono.</p>
+    <div class="row">
+      <button type="button" class="btn" id="copyText">Copia testo per il medico</button>
+      <button type="button" class="btn ghost" id="printBtn">Stampa / PDF</button>
+      <button type="button" class="btn ghost" id="exportJson">Scarica backup</button>
+      <button type="button" class="btn ghost" id="importBtn">Ripristina backup</button>
+      <input type="file" id="importFile" accept="application/json,.json" hidden />
+    </div>
+  </div>
+</section>
+
+</main>
+
+<nav class="tabs">
+  <a href="#oggi">Oggi</a>
+  <a href="#crolli">Crolli</a>
+  <a href="#limiti">Prima/adesso</a>
+  <a href="#riepilogo">Riepilogo</a>
+</nav>
+
+<script>
+(function () {
+  "use strict";
+  var KEY = "diario-sintomi-v1";
+
+  var SINTOMI = [
+    { id: "energia", nome: "Energia", lo: "nessuna", hi: "piena" },
+    { id: "fatica", nome: "Fatica", lo: "nessuna", hi: "estrema" },
+    { id: "dolore", nome: "Dolore", lo: "nessuno", hi: "insopportabile" },
+    { id: "nebbia", nome: "Nebbia mentale", lo: "lucido", hi: "molto confuso" },
+    { id: "sonno", nome: "Qualità del sonno", lo: "pessima", hi: "ottima" },
+    { id: "ortostatismo", nome: "Stare in piedi (capogiri, tachicardia)", lo: "nessun problema", hi: "impossibile" },
+    { id: "pem", nome: "Malessere post-sforzo", lo: "assente", hi: "grave" }
+  ];
+  var LIMITI_INIZIALI = ["Camminare", "Stare in piedi", "Lavoro / studio", "Lavori di casa", "Cucinare", "Doccia e cura di sé", "Leggere / schermi", "Vita sociale", "Guidare / uscire"];
+
+  // ---------- stato e salvataggio ----------
+  var state = load();
+  var statusEl = document.getElementById("status");
+
+  function fresh() {
+    return {
+      version: 1, days: {}, crolli: [],
+      limiti: LIMITI_INIZIALI.map(function (a) { return { id: uid(), attivita: a, prima: "", adesso: "" }; })
+    };
+  }
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) {
+        var s = JSON.parse(raw);
+        if (s && typeof s === "object") {
+          s.days = s.days || {}; s.crolli = s.crolli || []; s.limiti = s.limiti || [];
+          return s;
+        }
+      }
+    } catch (e) { /* gestito sotto */ }
+    return fresh();
+  }
+  function save() {
+    try {
+      state.savedAt = new Date().toISOString();
+      localStorage.setItem(KEY, JSON.stringify(state));
+      statusEl.className = "ok";
+      statusEl.textContent = "Salvato automaticamente alle " + new Date().toLocaleTimeString("it-IT");
+    } catch (e) {
+      statusEl.className = "err";
+      statusEl.textContent = "Attenzione: impossibile salvare (" + (e && e.name || "errore") + "). Scarica un backup dal Riepilogo.";
+    }
+  }
+  // Ulteriore sicurezza: salva anche quando la pagina viene nascosta o chiusa
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") save(); });
+  window.addEventListener("pagehide", save);
+  // Sincronizza tra più schede aperte
+  window.addEventListener("storage", function (e) {
+    if (e.key === KEY && e.newValue) { try { state = JSON.parse(e.newValue); renderAll(); } catch (x) {} }
+  });
+  // Chiede al browser di non cancellare i dati in caso di poco spazio
+  if (navigator.storage && navigator.storage.persist) { navigator.storage.persist().catch(function () {}); }
+
+  // ---------- utilità ----------
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function iso(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  function parse(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function today() { return iso(new Date()); }
+  function addDays(s, n) { var d = parse(s); d.setDate(d.getDate() + n); return iso(d); }
+  function fmt(s, long) {
+    if (!s) return "";
+    return parse(s).toLocaleDateString("it-IT", long ? { weekday: "long", day: "numeric", month: "long", year: "numeric" } : { day: "2-digit", month: "2-digit", year: "numeric" });
+  }
+  function diffDays(a, b) { return Math.round((parse(b) - parse(a)) / 86400000); }
+  function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  // ---------- OGGI ----------
+  var currentDay = today();
+  var dayInput = document.getElementById("dayInput");
+
+  function dayData(create) {
+    var d = state.days[currentDay];
+    if (!d && create) d = state.days[currentDay] = { scores: {} };
+    return d;
+  }
+  function cleanupDay() {
+    var d = state.days[currentDay];
+    if (!d) return;
+    var empty = !Object.keys(d.scores || {}).length && !d.passi && !d.sdraiato && !d.attivita && !d.note;
+    if (empty) delete state.days[currentDay];
+  }
+
+  function renderOggi() {
+    var t = today();
+    document.getElementById("oggi-title").textContent = currentDay === t ? "Oggi" : currentDay === addDays(t, -1) ? "Ieri" : cap(fmt(currentDay, true));
+    dayInput.value = currentDay; dayInput.max = t;
+    document.getElementById("nextDay").disabled = currentDay >= t;
+    var d = state.days[currentDay] || { scores: {} };
+    var html = "";
+    SINTOMI.forEach(function (s) {
+      var v = d.scores && d.scores[s.id];
+      html += '<div class="card"><label class="f">' + esc(s.nome) + ' <span class="sub">' + (v == null ? "— non segnato" : v + "/10") + '</span></label><div class="scale" role="group" aria-label="' + esc(s.nome) + '">';
+      for (var i = 0; i <= 10; i++) html += '<button type="button" data-sym="' + s.id + '" data-v="' + i + '" aria-pressed="' + (v === i) + '">' + i + "</button>";
+      html += '</div><div class="scale-ends"><span>0 = ' + esc(s.lo) + "</span><span>10 = " + esc(s.hi) + "</span></div></div>";
+    });
+    html += '<div class="card"><div class="grid2">' +
+      '<div><label class="f" for="f-passi">Passi</label><input type="number" inputmode="numeric" min="0" id="f-passi" data-field="passi" value="' + esc(d.passi) + '" placeholder="es. 1500" /></div>' +
+      '<div><label class="f" for="f-sdraiato">Ore sdraiato/a</label><input type="number" inputmode="decimal" min="0" max="24" step="0.5" id="f-sdraiato" data-field="sdraiato" value="' + esc(d.sdraiato) + '" placeholder="es. 16" /></div>' +
+      "</div></div>" +
+      '<div class="card"><label class="f" for="f-attivita">Cosa ho fatto <span class="sub">(attività, sforzi, uscite)</span></label><textarea id="f-attivita" data-field="attivita" placeholder="es. doccia, 10 minuti al telefono, visita medica">' + esc(d.attivita) + "</textarea></div>" +
+      '<div class="card"><label class="f" for="f-note">Note <span class="sub">(farmaci, ciclo, eventi, altri sintomi)</span></label><textarea id="f-note" data-field="note">' + esc(d.note) + "</textarea></div>";
+    document.getElementById("oggi-body").innerHTML = html;
+  }
+
+  document.getElementById("oggi-body").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-sym]");
+    if (!b) return;
+    var d = dayData(true), v = +b.dataset.v, id = b.dataset.sym;
+    if (d.scores[id] === v) delete d.scores[id]; else d.scores[id] = v;   // ri-toccare = annulla
+    d.updated = new Date().toISOString();
+    cleanupDay(); save();
+    var group = b.parentNode;
+    group.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(+x.dataset.v === (state.days[currentDay] && state.days[currentDay].scores[id]))); });
+    var cur = state.days[currentDay] && state.days[currentDay].scores[id];
+    group.parentNode.querySelector(".sub").textContent = cur == null ? "— non segnato" : cur + "/10";
+  });
+  document.getElementById("oggi-body").addEventListener("input", function (e) {
+    var f = e.target.dataset.field;
+    if (!f) return;
+    var d = dayData(true), v = e.target.value;
+    if (f === "passi" || f === "sdraiato") v = v === "" ? "" : Number(v);
+    d[f] = v; d.updated = new Date().toISOString();
+    cleanupDay(); save();
+  });
+  function goDay(s) { if (!s) return; if (s > today()) s = today(); currentDay = s; renderOggi(); }
+  dayInput.addEventListener("change", function () { goDay(dayInput.value); });
+  document.getElementById("prevDay").addEventListener("click", function () { goDay(addDays(currentDay, -1)); });
+  document.getElementById("nextDay").addEventListener("click", function () { goDay(addDays(currentDay, 1)); });
+
+  // ---------- CROLLI ----------
+  function renderCrolli() {
+    var list = state.crolli.slice().sort(function (a, b) { return (b.inizio || "").localeCompare(a.inizio || ""); });
+    var el = document.getElementById("crolli-list");
+    if (!list.length) { el.innerHTML = '<p class="empty">Nessun crollo registrato.</p>'; return; }
+    el.innerHTML = list.map(function (c) {
+      var sev = "";
+      for (var i = 1; i <= 5; i++) sev += '<button type="button" data-sev="' + i + '" aria-pressed="' + (c.gravita === i) + '">' + i + "</button>";
+      return '<div class="card" data-id="' + c.id + '">' +
+        '<div class="card-head">' + statoCrollo(c) + '<button type="button" class="btn danger" data-del>Elimina</button></div>' +
+        '<div class="grid2"><div><label class="f">Inizio</label><input type="date" data-k="inizio" value="' + esc(c.inizio) + '" /></div>' +
+        '<div><label class="f">Fine <span class="sub">(vuoto = in corso)</span></label><input type="date" data-k="fine" value="' + esc(c.fine) + '" /></div></div>' +
+        '<label class="f" style="margin-top:10px">Gravità <span class="sub">1 = lieve · 5 = costretto/a a letto</span></label><div class="sev">' + sev + "</div>" +
+        '<label class="f" style="margin-top:10px">Causa probabile</label><input type="text" data-k="causa" value="' + esc(c.causa) + '" placeholder="es. visita in ospedale, doccia lunga, stress" />' +
+        '<label class="f" style="margin-top:10px">Sintomi e note</label><textarea data-k="note">' + esc(c.note) + "</textarea></div>";
+    }).join("");
+  }
+  function statoCrollo(c) {
+    if (!c.fine) return '<span class="tag">In corso' + (c.inizio ? " · giorno " + (diffDays(c.inizio, today()) + 1) : "") + "</span>";
+    return '<span class="tag done">Durata ' + (diffDays(c.inizio, c.fine) + 1) + " gg</span>";
+  }
+  function findCrollo(el) { var card = el.closest("[data-id]"); return card && state.crolli.find(function (c) { return c.id === card.dataset.id; }); }
+  document.getElementById("addCrollo").addEventListener("click", function () {
+    state.crolli.push({ id: uid(), inizio: today(), fine: "", gravita: null, causa: "", note: "" });
+    save(); renderCrolli();
+  });
+  var crolliList = document.getElementById("crolli-list");
+  crolliList.addEventListener("input", function (e) {
+    var c = findCrollo(e.target), k = e.target.dataset.k;
+    if (!c || !k) return;
+    c[k] = e.target.value; save();
+    if (k === "inizio" || k === "fine") e.target.closest(".card").querySelector(".card-head span").outerHTML = statoCrollo(c);
+  });
+  crolliList.addEventListener("click", function (e) {
+    var c = findCrollo(e.target);
+    if (!c) return;
+    if (e.target.closest("[data-del]")) {
+      if (confirm("Eliminare questo crollo?")) { state.crolli = state.crolli.filter(function (x) { return x !== c; }); save(); renderCrolli(); }
+      return;
+    }
+    var b = e.target.closest("button[data-sev]");
+    if (b) {
+      var v = +b.dataset.sev;
+      c.gravita = c.gravita === v ? null : v; save();
+      b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(+x.dataset.sev === c.gravita)); });
+    }
+  });
+
+  // ---------- PRIMA / ADESSO ----------
+  function renderLimiti() {
+    var el = document.getElementById("limiti-list");
+    if (!state.limiti.length) { el.innerHTML = '<p class="empty">Nessuna attività. Aggiungine una.</p>'; return; }
+    el.innerHTML = state.limiti.map(function (l) {
+      return '<div class="card" data-id="' + l.id + '"><div class="card-head" style="margin-bottom:8px">' +
+        '<input type="text" data-k="attivita" value="' + esc(l.attivita) + '" placeholder="Attività" style="font-weight:600" aria-label="Attività" />' +
+        '<button type="button" class="btn danger" data-del aria-label="Elimina attività">✕</button></div>' +
+        '<div class="grid2"><div><label class="f">Prima</label><textarea data-k="prima" placeholder="es. 10 km a piedi">' + esc(l.prima) + "</textarea></div>" +
+        '<div><label class="f">Adesso</label><textarea data-k="adesso" placeholder="es. 200 m, poi devo sdraiarmi">' + esc(l.adesso) + "</textarea></div></div></div>";
+    }).join("");
+  }
+  function findLimite(el) { var card = el.closest("[data-id]"); return card && state.limiti.find(function (l) { return l.id === card.dataset.id; }); }
+  var limitiList = document.getElementById("limiti-list");
+  limitiList.addEventListener("input", function (e) {
+    var l = findLimite(e.target), k = e.target.dataset.k;
+    if (l && k) { l[k] = e.target.value; save(); }
+  });
+  limitiList.addEventListener("click", function (e) {
+    if (!e.target.closest("[data-del]")) return;
+    var l = findLimite(e.target);
+    if (l && confirm("Eliminare «" + (l.attivita || "attività") + "»?")) { state.limiti = state.limiti.filter(function (x) { return x !== l; }); save(); renderLimiti(); }
+  });
+  document.getElementById("addLimite").addEventListener("click", function () {
+    state.limiti.push({ id: uid(), attivita: "", prima: "", adesso: "" }); save(); renderLimiti();
+    var inputs = limitiList.querySelectorAll('input[data-k="attivita"]');
+    if (inputs.length) inputs[inputs.length - 1].focus();
+  });
+
+  // ---------- RIEPILOGO ----------
+  var periodo = 30;
+  try { var p = localStorage.getItem(KEY + "-periodo"); if (p !== null) periodo = +p; } catch (e) {}
+
+  function range() {
+    var end = today(), start;
+    if (periodo) start = addDays(end, -(periodo - 1));
+    else {
+      var keys = Object.keys(state.days).concat(state.crolli.map(function (c) { return c.inizio; }).filter(Boolean)).sort();
+      start = keys[0] || end;
+    }
+    return { start: start, end: end };
+  }
+  function crolliIn(r) {
+    return state.crolli.filter(function (c) { return c.inizio && c.inizio <= r.end && (c.fine || today()) >= r.start; })
+      .sort(function (a, b) { return a.inizio.localeCompare(b.inizio); });
+  }
+  function isCrashDay(s) { return state.crolli.some(function (c) { return c.inizio && c.inizio <= s && (c.fine || today()) >= s; }); }
+  function stats(r) {
+    var out = {}, days = 0;
+    SINTOMI.forEach(function (s) { out[s.id] = { sum: 0, n: 0, min: null, max: null }; });
+    Object.keys(state.days).forEach(function (k) {
+      if (k < r.start || k > r.end) return;
+      days++;
+      var sc = state.days[k].scores || {};
+      SINTOMI.forEach(function (s) {
+        var v = sc[s.id]; if (v == null) return;
+        var o = out[s.id]; o.sum += v; o.n++;
+        o.min = o.min == null ? v : Math.min(o.min, v); o.max = o.max == null ? v : Math.max(o.max, v);
+      });
+    });
+    return { per: out, days: days };
+  }
+  function avg(o) { return o.n ? (o.sum / o.n).toFixed(1).replace(".", ",") : "—"; }
+
+  function chart(r) {
+    var n = Math.min(diffDays(r.start, r.end) + 1, 365), start = addDays(r.end, -(n - 1));
+    var W = 600, H = 140, bw = W / n, s = "";
+    for (var i = 0; i < n; i++) {
+      var day = addDays(start, i), x = i * bw;
+      if (isCrashDay(day)) s += '<rect x="' + x.toFixed(2) + '" y="0" width="' + bw.toFixed(2) + '" height="' + H + '" fill="var(--crash)" opacity=".55"/>';
+      var d = state.days[day], v = d && d.scores && d.scores.energia;
+      if (v != null) {
+        var h = Math.max(2, (v / 10) * (H - 4));
+        s += '<rect x="' + (x + bw * 0.15).toFixed(2) + '" y="' + (H - h).toFixed(2) + '" width="' + Math.max(1, bw * 0.7).toFixed(2) + '" height="' + h.toFixed(2) + '" rx="' + Math.min(3, bw * 0.2).toFixed(1) + '" fill="var(--accent)"><title>' + fmt(day) + ": energia " + v + "/10</title></rect>";
+      }
+    }
+    s += '<line x1="0" y1="' + (H - 0.5) + '" x2="' + W + '" y2="' + (H - 0.5) + '" stroke="var(--line)"/>';
+    return '<svg class="chart" viewBox="0 0 ' + W + " " + H + '" preserveAspectRatio="none" role="img" aria-label="Energia giorno per giorno">' + s + "</svg>" +
+      '<div class="legend"><span><i style="background:var(--accent)"></i>Energia (0–10)</span><span><i style="background:var(--crash)"></i>Giorni di crollo</span><span>' + fmt(start) + " → " + fmt(r.end) + "</span></div>";
+  }
+
+  function renderRiepilogo() {
+    document.querySelectorAll("#periodo button").forEach(function (b) { b.setAttribute("aria-pressed", String(+b.dataset.p === periodo)); });
+    var r = range(), st = stats(r), cr = crolliIn(r);
+    var crashDays = 0;
+    for (var d = r.start; d <= r.end; d = addDays(d, 1)) if (isCrashDay(d)) crashDays++;
+    var html = '<div class="card"><h2>Andamento</h2>' + chart(r) + "</div>";
+    html += '<div class="card"><h2>Sintomi <span class="sub">(' + st.days + " giorni registrati)</span></h2><table><thead><tr><th>Sintomo</th><th class=\"n\">Media</th><th class=\"n\">Min</th><th class=\"n\">Max</th><th class=\"n\">Giorni</th></tr></thead><tbody>";
+    SINTOMI.forEach(function (s) {
+      var o = st.per[s.id];
+      html += "<tr><td>" + esc(s.nome) + '</td><td class="n">' + avg(o) + '</td><td class="n">' + (o.min == null ? "—" : o.min) + '</td><td class="n">' + (o.max == null ? "—" : o.max) + '</td><td class="n">' + o.n + "</td></tr>";
+    });
+    html += "</tbody></table></div>";
+    html += '<div class="card"><h2>Crolli <span class="sub">(' + cr.length + " · " + crashDays + " giorni totali nel periodo)</span></h2>";
+    html += cr.length ? "<table><tbody>" + cr.map(function (c) {
+      return "<tr><td>" + fmt(c.inizio) + " → " + (c.fine ? fmt(c.fine) : "in corso") + "</td><td>" + (c.gravita ? "gravità " + c.gravita + "/5" : "") + "</td><td>" + esc(c.causa) + "</td></tr>";
+    }).join("") + "</tbody></table>" : '<p class="empty">Nessun crollo nel periodo.</p>';
+    html += "</div>";
+    var lim = state.limiti.filter(function (l) { return l.prima || l.adesso; });
+    if (lim.length) {
+      html += '<div class="card"><h2>Prima / adesso</h2><table><thead><tr><th>Attività</th><th>Prima</th><th>Adesso</th></tr></thead><tbody>' +
+        lim.map(function (l) { return "<tr><td><b>" + esc(l.attivita) + "</b></td><td>" + esc(l.prima) + "</td><td>" + esc(l.adesso) + "</td></tr>"; }).join("") + "</tbody></table></div>";
+    }
+    document.getElementById("riepilogo-body").innerHTML = html;
+  }
+  document.getElementById("periodo").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-p]"); if (!b) return;
+    periodo = +b.dataset.p;
+    try { localStorage.setItem(KEY + "-periodo", String(periodo)); } catch (x) {}
+    renderRiepilogo();
+  });
+
+  function testoMedico() {
+    var r = range(), st = stats(r), cr = crolliIn(r), L = [];
+    L.push("DIARIO DEI SINTOMI — dal " + fmt(r.start) + " al " + fmt(r.end));
+    L.push("Giorni registrati: " + st.days);
+    L.push("");
+    L.push("SINTOMI (scala 0–10: media, min–max, n. giorni)");
+    SINTOMI.forEach(function (s) {
+      var o = st.per[s.id];
+      if (o.n) L.push("- " + s.nome + " (0=" + s.lo + ", 10=" + s.hi + "): " + avg(o) + " (" + o.min + "–" + o.max + ", " + o.n + " gg)");
+    });
+    L.push("");
+    L.push("CROLLI: " + cr.length);
+    cr.forEach(function (c) {
+      L.push("- " + fmt(c.inizio) + " → " + (c.fine ? fmt(c.fine) + " (" + (diffDays(c.inizio, c.fine) + 1) + " gg)" : "in corso") +
+        (c.gravita ? ", gravità " + c.gravita + "/5" : "") + (c.causa ? ", causa: " + c.causa : "") + (c.note ? ". " + c.note.replace(/\s+/g, " ") : ""));
+    });
+    var lim = state.limiti.filter(function (l) { return l.prima || l.adesso; });
+    if (lim.length) {
+      L.push(""); L.push("PRIMA / ADESSO");
+      lim.forEach(function (l) { L.push("- " + l.attivita + ": prima " + (l.prima || "—").replace(/\s+/g, " ") + "; adesso " + (l.adesso || "—").replace(/\s+/g, " ")); });
+    }
+    return L.join("\n");
+  }
+  document.getElementById("copyText").addEventListener("click", function () {
+    var t = testoMedico(), btn = this;
+    function done() { var o = btn.textContent; btn.textContent = "Copiato ✓"; setTimeout(function () { btn.textContent = o; }, 1800); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, function () { prompt("Copia il testo:", t); });
+    else prompt("Copia il testo:", t);
+  });
+  document.getElementById("printBtn").addEventListener("click", function () { window.print(); });
+  document.getElementById("exportJson").addEventListener("click", function () {
+    var blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "diario-sintomi-" + today() + ".json";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  });
+  var importFile = document.getElementById("importFile");
+  document.getElementById("importBtn").addEventListener("click", function () { importFile.click(); });
+  importFile.addEventListener("change", function () {
+    var f = importFile.files[0]; if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var s = JSON.parse(rd.result);
+        if (!s || typeof s !== "object" || !s.days) throw new Error("formato");
+        if (!confirm("Sostituire i dati attuali con quelli del backup?")) return;
+        s.crolli = s.crolli || []; s.limiti = s.limiti || [];
+        state = s; save(); renderAll();
+      } catch (e) { alert("File di backup non valido."); }
+      importFile.value = "";
+    };
+    rd.readAsText(f);
+  });
+
+  // ---------- navigazione ----------
+  var VIEWS = ["oggi", "crolli", "limiti", "riepilogo"];
+  function route() {
+    var v = location.hash.slice(1);
+    if (VIEWS.indexOf(v) < 0) v = "oggi";
+    VIEWS.forEach(function (id) { document.getElementById(id).hidden = id !== v; });
+    document.querySelectorAll("nav.tabs a").forEach(function (a) { a.classList.toggle("active", a.getAttribute("href") === "#" + v); });
+    if (v === "riepilogo") renderRiepilogo();
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener("hashchange", route);
+
+  function renderAll() { renderOggi(); renderCrolli(); renderLimiti(); renderRiepilogo(); }
+  renderAll(); route();
+  // al primo avvio salva subito, così la lista "Prima/adesso" iniziale è già persistente
+  save();
+  statusEl.className = "ok";
+  statusEl.textContent = "Salvataggio automatico attivo · i dati restano su questo dispositivo";
+  // se l'app resta aperta oltre la mezzanotte, "Oggi" si aggiorna al ritorno
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible" && dayInput.max !== today()) { if (currentDay === dayInput.max) currentDay = today(); renderOggi(); }
+  });
+})();
+</script>
+</body>
+</html>
