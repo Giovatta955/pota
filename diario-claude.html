@@ -508,6 +508,21 @@ function renderOggi(){
     scaleComp(d, {k:"ristoro", label:"Quanto ti ha riposato", lo:"per niente", hi:"del tutto"}, ()=>{ touchDay(date); renderOggi(); }, "notte")
   ));
 
+  const nNap = d.sonnellini ?? 0;
+  const napBlock=h("div",{class:"block"}, h("h2",{text:"Sonnellini di giorno"}),
+    h("p",{class:"hint", text:"Quante volte hai dormito durante il giorno e per quanto tempo in tutto."}),
+    stepper("Sonnellini", nNap, 1, 0, 6, val=>{ d.sonnellini=val; if(!val){ d.sonnelliniMin=0; } touchDay(date); renderOggi(); })
+  );
+  if(nNap>0){
+    napBlock.append(
+      stepper("Durata totale", d.sonnelliniMin ?? 0, 15, 0, 480, val=>{ d.sonnelliniMin=val; touchDay(date); renderOggi(); }, fmtMin),
+      h("p",{class:"hint", id:"h-napvol", style:"margin-top:14px", text:"Com’è andata"}),
+      segComp(d.sonnelliniTipo??null, ["L’ho scelto io","Non ho resistito, crollato"], val=>{ d.sonnelliniTipo=val; touchDay(date); renderOggi(); }, "h-napvol"),
+      scaleComp(d, {k:"ristoroSonnellini", label:"Quanto ti hanno riposato", lo:"per niente", hi:"del tutto"}, ()=>{ touchDay(date); renderOggi(); }, "pisolino")
+    );
+  }
+  v.append(napBlock);
+
   const ced = d.cedimenti ?? 0;
   v.append(h("div",{class:"block"}, h("h2",{text:"Gambe e dolore"}),
     stepper("Volte che le gambe hanno ceduto in piedi", ced, 1, 0, 50, val=>{ d.cedimenti=val; touchDay(date); renderOggi(); }),
@@ -695,6 +710,7 @@ function periodDates(){
   const out=[]; let d=start, g=0; while(d<=end && g<1200){ out.push(d); d=addDays(d,1); g++; }
   return out;
 }
+function fmtMin(m){ m=m||0; const hh=Math.floor(m/60), mm=m%60; return hh ? (mm? `${hh} h ${mm}` : `${hh} h`) : `${mm} min`; }
 function avg(arr){ return arr.length? arr.reduce((a,b)=>a+b,0)/arr.length : null; }
 function fmt1(x){ return x==null? "–" : x.toLocaleString("it-IT",{maximumFractionDigits:1}); }
 
@@ -723,6 +739,9 @@ function computeStats(){
     dates, cset, rec, nRec:rec.length,
     fatica:meanOf("fatica"), dolore:meanOf("dolore"), gambe:meanOf("gambe"), giramenti:meanOf("giramenti"),
     sonno:avg(num("sonnoOre")), ristoro:avg(num("ristoro")),
+    napGiorni:rec.filter(d=>(d.sonnellini||0)>0).length,
+    napMin:avg(rec.filter(d=>(d.sonnellini||0)>0 && typeof d.sonnelliniMin==="number" && d.sonnelliniMin>0).map(d=>d.sonnelliniMin)),
+    napCrollato:rec.filter(d=>(d.sonnellini||0)>0 && d.sonnelliniTipo==="Non ho resistito, crollato").length,
     grave, crashes, crashDays, durMedia:avg(durations),
     assenze:work("Assente"), uscito:work("Uscito prima"), fatica_lav:work("Lavorato a fatica"),
     cedGiorni:rec.filter(d=>(d.cedimenti||0)>0).length, cedTot:rec.reduce((a,d)=>a+(d.cedimenti||0),0),
@@ -785,6 +804,9 @@ function renderRiepilogo(){
   add("Giorni con gambe che cedono", `${st.cedGiorni} (${st.cedTot} volte)`);
   add("Giorni con aiuto da altri", String(st.aiuto));
   add("Sonno medio", st.sonno==null?"–":`${fmt1(st.sonno)} ore, riposo ${fmt1(st.ristoro)} su 10`);
+  add("Giorni con sonnellino", String(st.napGiorni));
+  add("Durata media sonnellini", st.napMin==null?"–":fmtMin(Math.round(st.napMin)));
+  add("Sonnellini senza riuscire a resistere", String(st.napCrollato));
   v.append(h("div",{class:"block"}, h("h2",{text:"In numeri"}), dl));
 
   const lb=h("div",{class:"block"}, h("h2",{text:"Cosa non sei riuscito a fare"}));
@@ -821,7 +843,7 @@ function buildCSV(){
   const sk=["fatica","dolore","gambe","giramenti","nebbia"];
   const cols=["data","stanchezza_media","dolore_medio","gambe_media","giramenti_media","nebbia_media"];
   for(const s of SLOTS){ for(const k of sk) cols.push(`${s.k}_${k}`); cols.push(`${s.k}_ora`); }
-  cols.push("gambe_sera","sonno_ore","sonno_riposo","cedimenti","zone_dolore","cosa_ho_fatto","avrei_voluto","non_riuscito","non_riuscito_altro","lavoro","aiuto","aiuto_note","duloxetina_mg","pregabalin_mg","paracetamolo","tachidol","effetti","note","crollo");
+  cols.push("gambe_sera","sonno_ore","sonno_riposo","sonnellini","sonnellini_minuti","sonnellini_tipo","sonnellini_riposo","cedimenti","zone_dolore","cosa_ho_fatto","avrei_voluto","non_riuscito","non_riuscito_altro","lavoro","aiuto","aiuto_note","duloxetina_mg","pregabalin_mg","paracetamolo","tachidol","effetti","note","crollo");
   const cset=crashDaySet();
   const lines=[cols.join(",")];
   for(const d of Object.keys(S.days).sort()){
@@ -829,7 +851,7 @@ function buildCSV(){
     const row=[d, ...sk.map(k=>dayMean(x,k))];
     for(const s of SLOTS){ const o=(x.slots&&x.slots[s.k])||{}; for(const k of sk) row.push(o[k]); row.push(o.ora); }
     const rls = x.slots&&x.slots.sera&&typeof x.slots.sera.rls==="number" ? x.slots.sera.rls : x.rls;
-    row.push(rls,x.sonnoOre,x.ristoro,x.cedimenti,x.zone,x.fatto,x.voluto,x.limiti,x.limitiAltro,x.lavoro,x.aiuto==null?"":(x.aiuto?"sì":"no"),x.aiutoNote,x.duloxetina,x.pregabalin,x.paracetamolo,x.tachidol,x.effetti,x.note,cset.has(d)?"sì":"");
+    row.push(rls,x.sonnoOre,x.ristoro,x.sonnellini,x.sonnelliniMin,x.sonnelliniTipo,x.ristoroSonnellini,x.cedimenti,x.zone,x.fatto,x.voluto,x.limiti,x.limitiAltro,x.lavoro,x.aiuto==null?"":(x.aiuto?"sì":"no"),x.aiutoNote,x.duloxetina,x.pregabalin,x.paracetamolo,x.tachidol,x.effetti,x.note,cset.has(d)?"sì":"");
     lines.push(row.map(csvCell).join(","));
   }
   return lines.join("\n");
@@ -848,7 +870,8 @@ function buildSummary(st){
   L.push(`- Gambe che cedono in piedi: ${st.cedGiorni} giorni, ${st.cedTot} volte in totale`);
   L.push(`- Giorni di lavoro persi: ${st.assenze}; uscito prima: ${st.uscito}; lavorato a fatica: ${st.fatica_lav}`);
   L.push(`- Giorni con aiuto da altri: ${st.aiuto}`);
-  L.push(`- Sonno medio: ${fmt1(st.sonno)} ore, riposo ${fmt1(st.ristoro)} su 10`,"");
+  L.push(`- Sonno medio: ${fmt1(st.sonno)} ore, riposo ${fmt1(st.ristoro)} su 10`);
+  L.push(`- Sonnellini di giorno: ${st.napGiorni} giorni${st.napMin!=null?`, in media ${fmtMin(Math.round(st.napMin))}`:""}${st.napCrollato?`; ${st.napCrollato} volte senza riuscire a resistere`:""}`,"");
   if(st.hasSlots){
     L.push(`## Momenti della giornata (media su 10)`);
     L.push(`| | Stanchezza | Dolore | Gambe | Giramenti |`, `| --- | --- | --- | --- | --- |`);
